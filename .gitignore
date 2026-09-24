@@ -1,0 +1,8 @@
+target/
+.tmp/
+.idea/
+*.iml
+.env
+*.log
+# raw captures from digikabu may contain personal data; only anonymized fixtures under src/test are committed
+captures/

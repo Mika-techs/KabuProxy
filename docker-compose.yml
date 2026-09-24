@@ -1,0 +1,41 @@
+# Production: ./scripts/build-image.sh && docker compose up -d   (external DB configured in .env)
+# Local dev DB only: `docker compose --profile localdb up -d mysql`
+# App + bundled DB: ./scripts/build-image.sh && docker compose --profile localdb up -d
+services:
+  kabuproxy:
+    build: .   # use ./scripts/build-image.sh - it builds the war on the host first
+    image: kabuproxy:latest
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      # localhost only - put a TLS reverse proxy in front. Use "8080:8080" only if the proxy runs on another host.
+      - "127.0.0.1:${KABU_HTTP_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 90s
+      retries: 3
+
+  mysql:
+    image: mysql:8.4
+    profiles: ["localdb"]
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${KABU_DB_DATABASE:-kabuproxy}
+      MYSQL_USER: ${KABU_DB_USERNAME:-kabuproxy}
+      MYSQL_PASSWORD: ${KABU_DB_PASSWORD:-kabuproxy}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      TZ: Europe/Berlin
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - kabuproxy-mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 10
+
+volumes:
+  kabuproxy-mysql:

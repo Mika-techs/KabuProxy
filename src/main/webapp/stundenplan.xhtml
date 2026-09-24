@@ -1,0 +1,132 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/WEB-INF/templates/layout.xhtml">
+    <ui:param name="page" value="stundenplan"/>
+    <ui:define name="title">Stundenplan</ui:define>
+
+    <ui:define name="content">
+        <ui:fragment rendered="#{not status.hasClass}">
+            <section class="empty">
+                <h1>Noch keine Daten</h1>
+                <p>Für dein Konto ist noch kein digikabu-Zugang hinterlegt oder der erste Abruf läuft gerade.</p>
+            </section>
+        </ui:fragment>
+
+        <ui:fragment rendered="#{status.hasClass}">
+
+            <div class="toolbar">
+                <h1 class="toolbar__title">
+                    Woche <span class="muted">#{timetableController.week.label}</span>
+                </h1>
+                <div class="weeknav" role="group" aria-label="Woche wechseln">
+                    <a class="btn btn--icon" href="?week=#{timetableController.week.previous}" title="Vorherige Woche" aria-label="Vorherige Woche">‹</a>
+                    <h:outputLink value="stundenplan.xhtml" styleClass="btn #{timetableController.currentWeek ? 'btn--active' : ''}">Diese Woche</h:outputLink>
+                    <a class="btn btn--icon" href="?week=#{timetableController.week.next}" title="Nächste Woche" aria-label="Nächste Woche">›</a>
+                </div>
+            </div>
+
+            <!-- changes since last visit -->
+            <ui:fragment rendered="#{not empty timetableController.changes}">
+                <section class="changes" aria-label="Änderungen">
+                    <div class="changes__head">
+                        <h2>#{timetableController.changes.size()} Änderung#{timetableController.changes.size() == 1 ? '' : 'en'} seit deinem letzten Besuch</h2>
+                        <h:form>
+                            <h:commandButton value="Gesehen" action="#{timetableController.markSeen}" styleClass="btn btn--small"/>
+                        </h:form>
+                    </div>
+                    <ul class="changes__list">
+                        <ui:repeat value="#{timetableController.changes}" var="c">
+                            <li class="#{c.cssClass}">
+                                <span class="change__when">#{c.dayLabel} · #{c.periodLabel}</span>
+                                <span class="change__type">#{c.typeLabel}</span>
+                                <span class="change__what">
+                                    <ui:fragment rendered="#{not empty c.before and not empty c.after}"><s>#{c.before}</s> → #{c.after}</ui:fragment>
+                                    <ui:fragment rendered="#{empty c.before}">#{c.after}</ui:fragment>
+                                    <ui:fragment rendered="#{empty c.after}"><s>#{c.before}</s></ui:fragment>
+                                </span>
+                            </li>
+                        </ui:repeat>
+                    </ul>
+                </section>
+            </ui:fragment>
+
+            <ui:fragment rendered="#{not timetableController.week.hasLessons}">
+                <section class="empty empty--inline">
+                    <p>Für diese Woche liegen keine Stunden vor. digikabu zeigt nur die aktuelle Woche ±1 – ältere Wochen gibt es hier nur,
+                        wenn kabuProxy sie damals schon abgerufen hat.</p>
+                </section>
+            </ui:fragment>
+
+            <!-- desktop: week grid -->
+            <div class="timetable" style="--periods:#{timetableController.week.periods.size()}">
+                <div class="timetable__corner"></div>
+                <ui:repeat value="#{timetableController.week.days}" var="d">
+                    <div class="timetable__dayhead #{d.today ? 'is-today' : ''}">
+                        <span class="dayhead__name">#{d.weekday}</span>
+                        <span class="dayhead__date">#{d.dateLabel}</span>
+                    </div>
+                </ui:repeat>
+
+                <div class="timetable__times" style="#{timetableController.week.gridRows}">
+                    <ui:repeat value="#{timetableController.week.periods}" var="p">
+                        <div class="slot" style="#{p.gridStyle}">
+                            <span class="slot__no">#{p.period}</span>
+                            <span class="slot__time">#{p.start}<br/>#{p.end}</span>
+                        </div>
+                    </ui:repeat>
+                </div>
+
+                <ui:repeat value="#{timetableController.week.days}" var="d">
+                    <div class="timetable__day #{d.today ? 'is-today' : ''} #{d.free ? 'is-free' : ''}" style="#{timetableController.week.gridRows}" data-date="#{d.iso}">
+                        <ui:fragment rendered="#{d.free}">
+                            <div class="day__free" style="grid-row:1 / -1;grid-column:1 / -1">#{d.freeLabel}</div>
+                        </ui:fragment>
+                        <ui:repeat value="#{d.lessons}" var="l">
+                            <article class="#{l.cssClass} #{l.singlePeriod ? 'lesson--short' : ''}" style="#{l.gridStyle}" data-time="#{l.timeLabel}">
+                                <div class="lesson__subject">#{l.subject}</div>
+                                <div class="lesson__meta">
+                                    <span>#{l.teacher}</span>
+                                    <span class="lesson__room">#{l.room}</span>
+                                </div>
+                                <ui:fragment rendered="#{l.changed}">
+                                    <div class="lesson__note">#{empty l.note ? (empty l.hint ? 'Änderung' : l.hint) : l.note}</div>
+                                </ui:fragment>
+                            </article>
+                        </ui:repeat>
+                    </div>
+                </ui:repeat>
+            </div>
+
+            <!-- mobile: day list -->
+            <div class="daylist">
+                <ui:repeat value="#{timetableController.week.days}" var="d">
+                    <section class="daycard #{d.today ? 'is-today' : ''}" id="day-#{d.iso}">
+                        <h2 class="daycard__head">
+                            <span>#{d.weekdayLong}</span>
+                            <span class="muted">#{d.dateLabel}</span>
+                            <ui:fragment rendered="#{d.today}"><span class="chip chip--accent">heute</span></ui:fragment>
+                        </h2>
+                        <ui:fragment rendered="#{d.free}">
+                            <p class="daycard__free">#{d.freeLabel}</p>
+                        </ui:fragment>
+                        <ul class="daycard__list">
+                            <ui:repeat value="#{d.lessons}" var="l">
+                                <li class="#{l.cssClass}" data-time="#{l.timeLabel}">
+                                    <span class="row__period">#{l.periodLabel}</span>
+                                    <span class="row__time">#{l.timeLabel}</span>
+                                    <span class="row__subject">#{l.subject}</span>
+                                    <span class="row__meta">#{l.teacher} · #{l.room}</span>
+                                    <ui:fragment rendered="#{l.changed}">
+                                        <span class="row__note">#{empty l.note ? (empty l.hint ? 'Änderung' : l.hint) : l.note}</span>
+                                    </ui:fragment>
+                                </li>
+                            </ui:repeat>
+                        </ul>
+                    </section>
+                </ui:repeat>
+            </div>
+        </ui:fragment>
+    </ui:define>
+</ui:composition>

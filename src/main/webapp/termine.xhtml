@@ -1,0 +1,46 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/WEB-INF/templates/layout.xhtml">
+    <ui:param name="page" value="termine"/>
+    <ui:define name="title">Termine</ui:define>
+
+    <ui:define name="content">
+        <div class="toolbar">
+            <h1 class="toolbar__title">Termine &amp; Schulaufgaben</h1>
+            <div class="weeknav">
+                <h:outputLink value="termine.xhtml" styleClass="btn #{calendarController.showPast ? '' : 'btn--active'}">Ab heute</h:outputLink>
+                <h:outputLink value="termine.xhtml?past=1" styleClass="btn #{calendarController.showPast ? 'btn--active' : ''}">Ganzes Jahr</h:outputLink>
+            </div>
+        </div>
+
+        <ui:fragment rendered="#{not empty calendarController.upcomingExams}">
+            <section class="cards">
+                <ui:repeat value="#{calendarController.upcomingExams}" var="e">
+                    <article class="examcard">
+                        <span class="examcard__date">#{e.dateLabel}</span>
+                        <span class="examcard__text">#{e.text}</span>
+                    </article>
+                </ui:repeat>
+            </section>
+        </ui:fragment>
+
+        <ui:fragment rendered="#{empty calendarController.months}">
+            <section class="empty"><p>Noch keine Termine geladen.</p></section>
+        </ui:fragment>
+
+        <ui:repeat value="#{calendarController.months}" var="m">
+            <section class="month">
+                <h2 class="month__title">#{m.title}</h2>
+                <ul class="month__list">
+                    <ui:repeat value="#{m.entries}" var="e">
+                        <li class="#{e.cssClass} #{e.exam ? 'entry--exam' : ''}">
+                            <span class="entry__date">#{e.dateLabel}</span>
+                            <span class="entry__text">#{e.text}</span>
+                        </li>
+                    </ui:repeat>
+                </ul>
+            </section>
+        </ui:repeat>
+    </ui:define>
+</ui:composition>

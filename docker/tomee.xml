@@ -1,0 +1,18 @@
+<tomee>
+    <!-- jdbcUrl / userName / password are overridden at startup from KABU_DB_* env vars, see entrypoint.sh -->
+    <Resource id="KabuDataSource" type="DataSource">
+        jdbcDriver = com.mysql.cj.jdbc.Driver
+        jdbcUrl = jdbc:mysql://localhost:3306/kabuproxy
+        userName = kabuproxy
+        password =
+        validationQuery = select 1
+        validationInterval = 30000
+        numTestsPerEvictionRun = 5
+        timeBetweenEvictionRuns = 30 seconds
+        testWhileIdle = true
+        testOnBorrow = true
+        initialSize = 0
+        maxIdle = 3
+        lazy = true
+    </Resource>
+</tomee>

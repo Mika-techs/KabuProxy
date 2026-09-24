@@ -1,0 +1,55 @@
+package de.mik.kabuproxy.web.model;
+
+import de.mik.kabuproxy.persistence.entities.DayKind;
+
+import java.time.LocalDate;
+import java.util.List;
+
+/**
+ * @param calendarText entry of the exam plan for that day (exam, holiday name), may be null
+ */
+public record DayView(LocalDate date, boolean today, List<LessonView> lessons, DayKind kind, String calendarText)
+{
+    public String weekday()
+    {
+        return Formats.weekdayShort(date);
+    }
+
+    public String weekdayLong()
+    {
+        return Formats.weekdayLong(date);
+    }
+
+    public String dateLabel()
+    {
+        return Formats.dayMonth(date);
+    }
+
+    public String iso()
+    {
+        return date.toString();
+    }
+
+    public boolean free()
+    {
+        return lessons.isEmpty();
+    }
+
+    public boolean holiday()
+    {
+        return kind == DayKind.HOLIDAY || kind == DayKind.NO_SCHOOL;
+    }
+
+    public String freeLabel()
+    {
+        if (calendarText != null)
+        {
+            return calendarText;
+        }
+        if (kind == DayKind.NO_SCHOOL)
+        {
+            return "Kein Unterricht";
+        }
+        return "Kein Unterricht eingetragen";
+    }
+}

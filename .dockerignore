@@ -1,0 +1,4 @@
+*
+!target/kabuproxy/
+!target/docker-lib/
+!docker/

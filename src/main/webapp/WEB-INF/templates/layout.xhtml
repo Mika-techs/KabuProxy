@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      lang="de">
+<f:view transient="#{empty stateful}" contentType="text/html" encoding="UTF-8">
+<h:head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta name="theme-color" content="#4f46e5"/>
+    <title><ui:insert name="title">kabuProxy</ui:insert> · kabuProxy</title>
+    <link rel="icon" type="image/svg+xml" href="#{request.contextPath}/favicon.svg"/>
+    <script>
+        // apply saved theme before first paint (no flash)
+        try { var t = localStorage.getItem('kabu-theme'); if (t) { document.documentElement.dataset.theme = t; } } catch (e) { }
+    </script>
+    <h:outputStylesheet library="kabu" name="kabu.css"/>
+    <ui:insert name="head"/>
+</h:head>
+<h:body styleClass="#{bodyClass}">
+    <a class="skip" href="#main">Zum Inhalt</a>
+    <header class="topbar">
+        <div class="topbar__inner">
+            <a class="brand" href="#{request.contextPath}/stundenplan.xhtml">
+                <span class="brand__logo" aria-hidden="true"></span>
+                <span class="brand__name">kabu<b>Proxy</b></span>
+            </a>
+            <h:panelGroup rendered="#{status.hasClass}" styleClass="chip">#{status.className}</h:panelGroup>
+
+            <nav class="nav" aria-label="Hauptnavigation">
+                <a class="nav__link #{page eq 'stundenplan' ? 'is-active' : ''}" href="#{request.contextPath}/stundenplan.xhtml">Stundenplan</a>
+                <a class="nav__link #{page eq 'termine' ? 'is-active' : ''}" href="#{request.contextPath}/termine.xhtml">Termine</a>
+                <a class="nav__link #{page eq 'fehlzeiten' ? 'is-active' : ''}" href="#{request.contextPath}/fehlzeiten.xhtml">Fehlzeiten</a>
+                <h:outputLink rendered="#{status.admin}" styleClass="nav__link #{page eq 'admin' ? 'is-active' : ''}" value="#{request.contextPath}/admin.xhtml">Admin</h:outputLink>
+            </nav>
+
+            <div class="topbar__actions">
+                <button type="button" class="icon-btn" id="theme-toggle" title="Hell/Dunkel umschalten" aria-label="Hell/Dunkel umschalten">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+                </button>
+                <a class="icon-btn" href="#{request.contextPath}/logout" title="Abmelden (#{status.displayName})" aria-label="Abmelden">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/></svg>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <h:panelGroup layout="block" styleClass="devbar" rendered="#{status.devAuth}">
+        DEV-LOGIN aktiv – keine Authentifizierung! (KABU_DEV_AUTH=true)
+    </h:panelGroup>
+
+    <main id="main" class="page">
+        <h:panelGroup layout="block" styleClass="banner banner--warn" rendered="#{not empty status.problem}">
+            <strong>Hinweis:</strong> #{status.problem}
+        </h:panelGroup>
+
+        <h:messages globalOnly="true" styleClass="flash" infoClass="flash__item flash__item--info" warnClass="flash__item flash__item--warn"
+                    errorClass="flash__item flash__item--error"/>
+
+        <ui:insert name="content"/>
+    </main>
+
+    <footer class="footer">
+        <span>Daten von digikabu.de · #{status.freshness}</span>
+        <h:form rendered="#{status.hasAccount}" styleClass="footer__form">
+            <h:commandButton value="Jetzt aktualisieren" action="#{status.refresh}" styleClass="btn btn--ghost btn--small"/>
+        </h:form>
+    </footer>
+
+    <h:outputScript library="kabu" name="kabu.js" target="body"/>
+</h:body>
+</f:view>
+</html>

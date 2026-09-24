@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.2" xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd">
+    <persistence-unit name="kabu" transaction-type="JTA">
+        <jta-data-source>KabuDataSource</jta-data-source>
+
+        <class>de.mik.kabuproxy.persistence.entities.AppUserEntity</class>
+        <class>de.mik.kabuproxy.persistence.entities.DigikabuAccountEntity</class>
+        <class>de.mik.kabuproxy.persistence.entities.SchoolClassEntity</class>
+        <class>de.mik.kabuproxy.persistence.entities.PeriodSlotEntity</class>
+        <class>de.mik.kabuproxy.persistence.entities.LessonEntity</class>
+        <class>de.mik.kabuproxy.persistence.entities.LessonChangeEntity</class>
+        <class>de.mik.kabuproxy.persistence.entities.CalendarDayEntity</class>
+        <class>de.mik.kabuproxy.persistence.entities.AbsenceEntity</class>
+        <class>de.mik.kabuproxy.persistence.entities.CrawlDebugEntity</class>
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+
+        <validation-mode>NONE</validation-mode>
+        <properties>
+            <property name="hibernate.hbm2ddl.auto" value="none"/>
+            <property name="hibernate.default_batch_fetch_size" value="30"/>
+        </properties>
+    </persistence-unit>
+</persistence>

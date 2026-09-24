@@ -1,0 +1,42 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/WEB-INF/templates/layout.xhtml">
+    <ui:param name="page" value="fehlzeiten"/>
+    <ui:define name="title">Fehlzeiten</ui:define>
+
+    <ui:define name="content">
+        <h1 class="toolbar__title">Deine Fehlzeiten</h1>
+        <ui:fragment rendered="#{status.hasAccount and not empty status.account.absenceFullDays}">
+            <section class="stats">
+                <div class="stat">
+                    <span class="stat__value">#{status.account.absenceFullDays}</span>
+                    <span class="stat__label">ganze Tage</span>
+                    <span class="stat__sub #{status.account.absenceFullDaysUnexcused gt 0 ? 'is-bad' : ''}">davon #{status.account.absenceFullDaysUnexcused} unentschuldigt</span>
+                </div>
+                <div class="stat">
+                    <span class="stat__value">#{status.account.absenceHours}</span>
+                    <span class="stat__label">einzelne Stunden</span>
+                    <span class="stat__sub #{status.account.absenceHoursUnexcused gt 0 ? 'is-bad' : ''}">davon #{status.account.absenceHoursUnexcused} unentschuldigt</span>
+                </div>
+            </section>
+        </ui:fragment>
+
+        <ui:fragment rendered="#{empty absenceController.absences}">
+            <section class="empty empty--inline"><p>Keine Fehlzeiten eingetragen. 🎉</p></section>
+        </ui:fragment>
+
+        <ui:fragment rendered="#{not empty absenceController.absences}">
+            <ul class="absences">
+                <ui:repeat value="#{absenceController.absences}" var="a">
+                    <li class="absence #{a.excusedFlag ? 'is-excused' : 'is-open'}">
+                        <span class="absence__date">#{a.weekday} #{a.date}</span>
+                        <span class="absence__span">#{a.from} – #{a.to} · #{a.kind}</span>
+                        <span class="absence__remark">#{a.remark}</span>
+                        <span class="absence__state">#{a.excusedFlag ? a.excused : 'nicht entschuldigt'}</span>
+                    </li>
+                </ui:repeat>
+            </ul>
+        </ui:fragment>
+        <p class="muted small">Abgegebene Entschuldigungen erscheinen bei digikabu erst mit Verzögerung.</p>
+    </ui:define>
+</ui:composition>

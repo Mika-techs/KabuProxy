@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_1.xsd"
+         version="6.1">
+
+    <display-name>kabuProxy</display-name>
+
+    <context-param>
+        <param-name>primefaces.THEME</param-name>
+        <param-value>saga-blue</param-value>
+    </context-param>
+    <context-param>
+        <param-name>primefaces.MOVE_SCRIPTS_TO_BOTTOM</param-name>
+        <param-value>true</param-value>
+    </context-param>
+    <context-param>
+        <param-name>jakarta.faces.PROJECT_STAGE</param-name>
+        <param-value>Development</param-value>
+    </context-param>
+    <context-param>
+        <param-name>jakarta.faces.FACELETS_SKIP_COMMENTS</param-name>
+        <param-value>true</param-value>
+    </context-param>
+    <context-param>
+        <param-name>jakarta.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL</param-name>
+        <param-value>true</param-value>
+    </context-param>
+    <context-param>
+        <param-name>org.apache.myfaces.SUPPORT_MANAGED_BEANS</param-name>
+        <param-value>false</param-value>
+    </context-param>
+    <context-param>
+        <param-name>org.apache.myfaces.RESOURCE_MAX_TIME_EXPIRES</param-name>
+        <param-value>604800000</param-value>
+    </context-param>
+
+    <servlet>
+        <servlet-name>Faces Servlet</servlet-name>
+        <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Faces Servlet</servlet-name>
+        <url-pattern>*.xhtml</url-pattern>
+    </servlet-mapping>
+
+    <!-- everything requires a login (Authentik, or the dev login) ... -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>app</web-resource-name>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>**</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <!-- ... except the healthcheck and static resources (no auth-constraint = open) -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>open</web-resource-name>
+            <url-pattern>/health</url-pattern>
+            <url-pattern>/jakarta.faces.resource/*</url-pattern>
+            <url-pattern>/resources/*</url-pattern>
+            <url-pattern>/favicon.svg</url-pattern>
+        </web-resource-collection>
+    </security-constraint>
+
+    <!-- sliding 8h session; after that Authentik logs you back in silently while its own session lives -->
+    <session-config>
+        <session-timeout>480</session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+        </cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+
+    <welcome-file-list>
+        <welcome-file>stundenplan.xhtml</welcome-file>
+    </welcome-file-list>
+
+    <error-page>
+        <exception-type>jakarta.faces.application.ViewExpiredException</exception-type>
+        <location>/stundenplan.xhtml</location>
+    </error-page>
+    <error-page>
+        <error-code>403</error-code>
+        <location>/error.xhtml</location>
+    </error-page>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/error.xhtml</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/error.xhtml</location>
+    </error-page>
+</web-app>
