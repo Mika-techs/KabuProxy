@@ -1,0 +1,93 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:a="jakarta.faces.passthrough"
+                template="/WEB-INF/templates/layout.xhtml">
+    <ui:param name="page" value="einstellungen"/>
+    <ui:param name="stateful" value="true"/>
+    <ui:define name="title">Einstellungen</ui:define>
+
+    <ui:define name="content">
+        <h1 class="toolbar__title">Einstellungen</h1>
+        <p class="muted">Gilt für dein Konto – auf allen Geräten.</p>
+
+        <h:form id="settings" styleClass="settings">
+            <section class="settings__section">
+                <h2>Darstellung</h2>
+                <p class="muted small">„System“ folgt der Einstellung deines Geräts.</p>
+                <div class="segmented" role="radiogroup" aria-label="Darstellung">
+                    <button type="button" class="segmented__opt" role="radio" data-value="SYSTEM">System</button>
+                    <button type="button" class="segmented__opt" role="radio" data-value="LIGHT">Hell</button>
+                    <button type="button" class="segmented__opt" role="radio" data-value="DARK">Dunkel</button>
+                </div>
+                <h:inputHidden id="mode" value="#{settingsController.themeMode}"/>
+            </section>
+
+            <section class="settings__section">
+                <h2>Akzentfarbe</h2>
+                <p class="muted small">Für Links, Buttons, die aktuelle Stunde und den Countdown. Im Dunkelmodus wird sie automatisch aufgehellt.</p>
+                <div class="swatches" role="radiogroup" aria-label="Akzentfarbe">
+                    <ui:repeat value="#{settingsController.presets}" var="p">
+                        <button type="button" class="swatch" role="radio" data-color="#{p.color}" style="--swatch: #{p.color}" title="#{p.label}"
+                                aria-label="#{p.label}"></button>
+                    </ui:repeat>
+                    <label class="swatch swatch--custom" role="radio" title="Eigene Farbe" aria-label="Eigene Farbe">
+                        <input type="color" id="accent-picker" value="#{settingsController.pickerColor}"/>
+                    </label>
+                </div>
+                <h:inputHidden id="accent" value="#{settingsController.accentColor}"/>
+
+                <div class="preview" aria-hidden="true">
+                    <span class="btn btn--active btn--small">Button</span>
+                    <span class="nav__link is-active">Stundenplan</span>
+                    <span class="chip chip--accent">Klasse</span>
+                    <a href="#" tabindex="-1">Link</a>
+                </div>
+            </section>
+
+            <section class="settings__section">
+                <h2>Farben</h2>
+                <p class="muted small">Getrennt für hell und dunkel. Rahmen, gedämpfter Text und die hellen Hintergründe der Markierungen werden daraus
+                    abgeleitet. Die Vorschau zeigt den gerade aktiven Modus – zum Prüfen oben unter „Darstellung“ umschalten.</p>
+                <table class="colors">
+                    <thead>
+                        <tr><th scope="col">Farbe</th><th scope="col">Hell</th><th scope="col">Dunkel</th><th scope="col"><span class="skip">Zurücksetzen</span></th></tr>
+                    </thead>
+                    <tbody>
+                        <ui:repeat value="#{settingsController.themeColors}" var="c">
+                            <tr>
+                                <td>#{c.label}</td>
+                                <td>
+                                    <h:inputText value="#{settingsController.colors[c.lightKey]}" a:type="color" a:data-var="#{c.lightKey}"
+                                                 a:data-default="#{c.lightDefault}" a:aria-label="#{c.label} (hell)"/>
+                                </td>
+                                <td>
+                                    <h:inputText value="#{settingsController.colors[c.darkKey]}" a:type="color" a:data-var="#{c.darkKey}"
+                                                 a:data-default="#{c.darkDefault}" a:aria-label="#{c.label} (dunkel)"/>
+                                </td>
+                                <td>
+                                    <button type="button" class="icon-btn color-reset" title="Standard" aria-label="#{c.label} zurücksetzen">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4"/></svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
+
+                <div class="preview" aria-hidden="true">
+                    <span class="demo demo--changed">Vertretung</span>
+                    <span class="demo demo--cancel">Entfall</span>
+                    <span class="demo demo--ok">Neu</span>
+                    <span class="demo demo--holiday">Ferien</span>
+                    <span class="demo demo--muted">gedämpft</span>
+                </div>
+            </section>
+
+            <div class="settings__actions">
+                <h:commandButton value="Speichern" action="#{settingsController.save}" styleClass="btn btn--active"/>
+                <h:commandButton value="Zurücksetzen" action="#{settingsController.reset}" styleClass="btn btn--ghost"/>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

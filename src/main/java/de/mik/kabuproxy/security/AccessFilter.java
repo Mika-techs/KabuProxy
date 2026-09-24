@@ -30,6 +30,7 @@ public class AccessFilter extends HttpFilter
 
     private static final String PENDING_PAGE = "/pending.xhtml";
     private static final String ADMIN_PAGE = "/admin.xhtml";
+    private static final String THEME_SERVLET = "/theme";
     private static final List<String> OPEN_PREFIXES = List.of("/health", "/callback", "/logout", "/jakarta.faces.resource/", "/resources/",
         "/favicon");
 
@@ -73,7 +74,7 @@ public class AccessFilter extends HttpFilter
             return;
         }
         boolean blocked = status == UserStatus.DISABLED || (status == UserStatus.PENDING && !admin);
-        if (blocked && !PENDING_PAGE.equals(path))
+        if (blocked && !PENDING_PAGE.equals(path) && !THEME_SERVLET.equals(path))
         {
             response.sendRedirect(request.getContextPath() + PENDING_PAGE);
             return;

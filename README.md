@@ -12,6 +12,9 @@ Hibernate 7 · Liquibase · MySQL 8 · log4j2 · Lombok · Jsoup.
 ## Features
 
 - Week grid (desktop) / day cards (mobile), light + dark mode, "jetzt" marker on the running lesson
+- Per-user settings page (Einstellungen, stored in the DB so they follow you across devices): light/dark/system
+  mode, accent colour (presets or free pick, auto-lightened in dark mode) and the base theme colours (background,
+  surfaces, text, change/cancel/new/holiday markers) separately for light and dark
 - Changes (Änderung, new/cancelled lessons) highlighted, plus "N changes since your last visit"
 - History: digikabu only shows ±1 week, kabuProxy keeps every week it has seen
 - Exams and holidays as a clean list; block-schedule "kein Unterricht" weeks merged into ranges

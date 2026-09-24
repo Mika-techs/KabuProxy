@@ -3,18 +3,17 @@
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
       xmlns:ui="jakarta.faces.facelets"
-      lang="de">
+      lang="de"
+      data-theme="#{theme.settings.themeAttr}"
+      data-accent="#{theme.settings.hasAccent ? 'custom' : 'default'}"
+      style="#{theme.settings.style}">
 <f:view transient="#{empty stateful}" contentType="text/html" encoding="UTF-8">
 <h:head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-    <meta name="theme-color" content="#4f46e5"/>
+    <meta name="theme-color" content="#{theme.settings.effectiveAccent}"/>
     <title><ui:insert name="title">kabuProxy</ui:insert> · kabuProxy</title>
     <link rel="icon" type="image/svg+xml" href="#{request.contextPath}/favicon.svg"/>
-    <script>
-        // apply saved theme before first paint (no flash)
-        try { var t = localStorage.getItem('kabu-theme'); if (t) { document.documentElement.dataset.theme = t; } } catch (e) { }
-    </script>
     <h:outputStylesheet library="kabu" name="kabu.css"/>
     <ui:insert name="head"/>
 </h:head>
@@ -36,9 +35,13 @@
             </nav>
 
             <div class="topbar__actions">
-                <button type="button" class="icon-btn" id="theme-toggle" title="Hell/Dunkel umschalten" aria-label="Hell/Dunkel umschalten">
+                <button type="button" class="icon-btn" id="theme-toggle" data-url="#{request.contextPath}/theme" title="Hell/Dunkel umschalten" aria-label="Hell/Dunkel umschalten">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
                 </button>
+                <a class="icon-btn #{page eq 'einstellungen' ? 'is-active' : ''}" href="#{request.contextPath}/einstellungen.xhtml" title="Einstellungen"
+                   aria-label="Einstellungen">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+                </a>
                 <a class="icon-btn" href="#{request.contextPath}/logout" title="Abmelden (#{status.displayName})" aria-label="Abmelden">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/></svg>
                 </a>

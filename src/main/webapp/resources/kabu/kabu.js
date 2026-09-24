@@ -1,18 +1,101 @@
 (function () {
     'use strict';
 
-    // ---- theme toggle (light / dark / system) ----
+    // ---- theme toggle: flips light/dark right away and stores it in the user's settings ----
     var root = document.documentElement;
+    var modeField = document.getElementById('settings:mode');
     var toggle = document.getElementById('theme-toggle');
     if (toggle) {
         toggle.addEventListener('click', function () {
             var dark = root.dataset.theme
                 ? root.dataset.theme === 'dark'
                 : window.matchMedia('(prefers-color-scheme: dark)').matches;
-            root.dataset.theme = dark ? 'light' : 'dark';
-            try { localStorage.setItem('kabu-theme', root.dataset.theme); } catch (e) { /* private mode */ }
+            var mode = dark ? 'light' : 'dark';
+            root.dataset.theme = mode;
+            if (modeField) {
+                selectMode(mode.toUpperCase());
+            }
+            fetch(toggle.dataset.url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Kabu-Theme': '1' },
+                body: 'mode=' + mode,
+                credentials: 'same-origin'
+            }).catch(function () { /* offline - only this page keeps the choice */ });
         });
     }
+
+    // ---- settings page: live preview, the hidden fields are what gets saved ----
+    var DEFAULT_ACCENT = '#4f46e5';
+    function selectMode(mode) {
+        modeField.value = mode;
+        document.querySelectorAll('.segmented__opt').forEach(function (b) {
+            b.setAttribute('aria-checked', String(b.dataset.value === mode));
+        });
+        root.dataset.theme = mode === 'SYSTEM' ? '' : mode.toLowerCase();
+    }
+    // same formula as UserSettings.accentText()
+    function textOn(hex) {
+        var ch = function (i) {
+            var c = parseInt(hex.substr(i, 2), 16) / 255;
+            return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        };
+        return 0.2126 * ch(1) + 0.7152 * ch(3) + 0.0722 * ch(5) > 0.4 ? '#1d2130' : '#ffffff';
+    }
+    var accentField = document.getElementById('settings:accent');
+    var picker = document.getElementById('accent-picker');
+    function selectAccent(color) {
+        color = (color || DEFAULT_ACCENT).toLowerCase();
+        accentField.value = color === DEFAULT_ACCENT ? '' : color;
+        var preset = false;
+        document.querySelectorAll('.swatch[data-color]').forEach(function (s) {
+            var hit = s.dataset.color === color;
+            preset = preset || hit;
+            s.setAttribute('aria-checked', String(hit));
+        });
+        picker.parentNode.setAttribute('aria-checked', String(!preset));
+        picker.value = color;
+        if (color === DEFAULT_ACCENT) {
+            root.dataset.accent = 'default';
+            root.style.removeProperty('--user-accent');
+            root.style.removeProperty('--user-accent-text');
+        } else {
+            root.dataset.accent = 'custom';
+            root.style.setProperty('--user-accent', color);
+            root.style.setProperty('--user-accent-text', textOn(color));
+        }
+    }
+    if (modeField && accentField && picker) {
+        document.querySelectorAll('.segmented__opt').forEach(function (b) {
+            b.addEventListener('click', function () { selectMode(b.dataset.value); });
+        });
+        document.querySelectorAll('.swatch[data-color]').forEach(function (s) {
+            s.addEventListener('click', function () { selectAccent(s.dataset.color); });
+        });
+        picker.addEventListener('input', function () { selectAccent(picker.value); });
+        selectMode(modeField.value || 'SYSTEM');
+        selectAccent(accentField.value);
+    }
+
+    // theme colours: same --u-<key> properties the server renders into <html style>; built-in values stay unset
+    function applyColor(input) {
+        var name = '--u-' + input.dataset.var;
+        if (input.value.toLowerCase() === input.dataset.default) {
+            root.style.removeProperty(name);
+        } else {
+            root.style.setProperty(name, input.value);
+        }
+    }
+    document.querySelectorAll('.colors input[data-var]').forEach(function (input) {
+        input.addEventListener('input', function () { applyColor(input); });
+    });
+    document.querySelectorAll('.colors .color-reset').forEach(function (b) {
+        b.addEventListener('click', function () {
+            b.closest('tr').querySelectorAll('input[data-var]').forEach(function (input) {
+                input.value = input.dataset.default;
+                applyColor(input);
+            });
+        });
+    });
 
     // ---- mark the lesson running right now ----
     function toMinutes(hhmm) {
@@ -110,7 +193,7 @@
     }
 
     // ---- keep an open tab fresh: reload (GET, never re-POST) after 15 min when visible ----
-    if (!document.querySelector('.ui-datatable')) {
+    if (!document.querySelector('.ui-datatable, .settings')) {
         var loadedAt = Date.now();
         var FRESH_MS = 15 * 60 * 1000;
         var refreshIfStale = function () {

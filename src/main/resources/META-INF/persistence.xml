@@ -14,6 +14,7 @@
         <class>de.mik.kabuproxy.persistence.entities.CalendarDayEntity</class>
         <class>de.mik.kabuproxy.persistence.entities.AbsenceEntity</class>
         <class>de.mik.kabuproxy.persistence.entities.CrawlDebugEntity</class>
+        <class>de.mik.kabuproxy.persistence.entities.UserSettingsEntity</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
 
         <validation-mode>NONE</validation-mode>

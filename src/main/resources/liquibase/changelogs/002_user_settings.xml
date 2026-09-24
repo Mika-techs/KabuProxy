@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd">
+
+    <changeSet id="002-user-settings" author="mik">
+        <createTable tableName="user_settings">
+            <column name="user_id" type="BIGINT">
+                <constraints primaryKey="true" foreignKeyName="fk_user_settings_user" references="app_user(id)" deleteCascade="true"/>
+            </column>
+            <column name="theme_mode" type="VARCHAR(10)" defaultValue="SYSTEM">
+                <constraints nullable="false"/>
+            </column>
+            <!-- #rrggbb, null = built-in accent -->
+            <column name="accent_color" type="VARCHAR(7)"/>
+            <column name="updated_at" type="DATETIME(6)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="002-user-theme-colors" author="mik">
+        <createTable tableName="user_theme_color">
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_user_theme_color_settings" references="user_settings(user_id)" deleteCascade="true"/>
+            </column>
+            <!-- ThemeColor key, e.g. light-bg / dark-surface -->
+            <column name="color_key" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <!-- #rrggbb -->
+            <column name="color" type="VARCHAR(7)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="user_theme_color" columnNames="user_id, color_key" constraintName="pk_user_theme_color"/>
+    </changeSet>
+</databaseChangeLog>

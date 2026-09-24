@@ -1,78 +1,117 @@
 /* kabuProxy – own design on top of PrimeFaces saga-blue (only the admin page uses PF widgets) */
 
 :root {
-    --bg: #f5f6fa;
-    --surface: #ffffff;
-    --surface-2: #f0f1f6;
-    --border: #e3e5ee;
-    --text: #1d2130;
-    --text-muted: #6b7185;
+    --bg: var(--u-light-bg, #f5f6fa);
+    --surface: var(--u-light-surface, #ffffff);
+    --surface-2: var(--u-light-surface-2, #f0f1f6);
+    --border: var(--u-light-border, #e3e5ee);
+    --text: var(--u-light-text, #1d2130);
+    --text-muted: var(--u-light-text-muted, #6b7185);
     --accent: #4f46e5;
     --accent-soft: #eef0ff;
     --accent-text: #ffffff;
-    --changed: #b45309;
-    --changed-soft: #fff4e0;
-    --changed-border: #f5a524;
-    --cancel: #c0262d;
-    --cancel-soft: #fdecec;
-    --ok: #15803d;
-    --ok-soft: #e7f6ec;
-    --holiday-soft: #eaf5ff;
-    --holiday: #1d6fb8;
+    --changed: var(--u-light-changed, #b45309);
+    --changed-soft: var(--u-light-changed-soft, #fff4e0);
+    --changed-border: var(--u-light-changed-border, #f5a524);
+    --cancel: var(--u-light-cancel, #c0262d);
+    --cancel-soft: var(--u-light-cancel-soft, #fdecec);
+    --ok: var(--u-light-ok, #15803d);
+    --ok-soft: var(--u-light-ok-soft, #e7f6ec);
+    --holiday-soft: var(--u-light-holiday-soft, #eaf5ff);
+    --holiday: var(--u-light-holiday, #1d6fb8);
     --shadow: 0 1px 2px rgba(20, 24, 40, .06), 0 2px 8px rgba(20, 24, 40, .05);
     --radius: 12px;
     --row-h: 64px;
     --break-h: 10px;
     --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color-scheme: light;
+
+    /* user colours (settings page) arrive as --u-light-… and --u-dark-… in the <html> style attribute, the tokens above
+       and below fall back to the built-ins while they are unset. The dependent tokens are derived here: a custom
+       property that references an unset one is itself unset, so they only kick in once their source colour is set. */
+    --u-light-surface-2: color-mix(in srgb, var(--u-light-surface) 94%, var(--u-light-text, #1d2130));
+    --u-light-border: color-mix(in srgb, var(--u-light-surface) 86%, var(--u-light-text, #1d2130));
+    --u-light-text-muted: color-mix(in srgb, var(--u-light-text) 62%, var(--u-light-surface, #ffffff));
+    --u-light-changed-soft: color-mix(in srgb, var(--u-light-changed) 14%, var(--u-light-surface, #ffffff));
+    --u-light-changed-border: color-mix(in srgb, var(--u-light-changed) 70%, var(--u-light-surface, #ffffff));
+    --u-light-cancel-soft: color-mix(in srgb, var(--u-light-cancel) 14%, var(--u-light-surface, #ffffff));
+    --u-light-ok-soft: color-mix(in srgb, var(--u-light-ok) 14%, var(--u-light-surface, #ffffff));
+    --u-light-holiday-soft: color-mix(in srgb, var(--u-light-holiday) 14%, var(--u-light-surface, #ffffff));
+    --u-dark-surface-2: color-mix(in srgb, var(--u-dark-surface) 94%, var(--u-dark-text, #e6e8ef));
+    --u-dark-border: color-mix(in srgb, var(--u-dark-surface) 86%, var(--u-dark-text, #e6e8ef));
+    --u-dark-text-muted: color-mix(in srgb, var(--u-dark-text) 62%, var(--u-dark-surface, #171a23));
+    --u-dark-changed-soft: color-mix(in srgb, var(--u-dark-changed) 22%, var(--u-dark-surface, #171a23));
+    --u-dark-changed-border: color-mix(in srgb, var(--u-dark-changed) 70%, var(--u-dark-surface, #171a23));
+    --u-dark-cancel-soft: color-mix(in srgb, var(--u-dark-cancel) 22%, var(--u-dark-surface, #171a23));
+    --u-dark-ok-soft: color-mix(in srgb, var(--u-dark-ok) 22%, var(--u-dark-surface, #171a23));
+    --u-dark-holiday-soft: color-mix(in srgb, var(--u-dark-holiday) 22%, var(--u-dark-surface, #171a23));
 }
 
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-        --bg: #0f1117;
-        --surface: #171a23;
-        --surface-2: #1e2230;
-        --border: #2a2f40;
-        --text: #e6e8ef;
-        --text-muted: #9097ab;
+        --bg: var(--u-dark-bg, #0f1117);
+        --surface: var(--u-dark-surface, #171a23);
+        --surface-2: var(--u-dark-surface-2, #1e2230);
+        --border: var(--u-dark-border, #2a2f40);
+        --text: var(--u-dark-text, #e6e8ef);
+        --text-muted: var(--u-dark-text-muted, #9097ab);
         --accent: #8b87ff;
         --accent-soft: #24244a;
         --accent-text: #0f1117;
-        --changed: #fbbf5c;
-        --changed-soft: #3a2a10;
-        --changed-border: #d9912a;
-        --cancel: #ff7b7b;
-        --cancel-soft: #3a1618;
-        --ok: #5ad083;
-        --ok-soft: #12301d;
-        --holiday-soft: #13273a;
-        --holiday: #7cc0ff;
+        --changed: var(--u-dark-changed, #fbbf5c);
+        --changed-soft: var(--u-dark-changed-soft, #3a2a10);
+        --changed-border: var(--u-dark-changed-border, #d9912a);
+        --cancel: var(--u-dark-cancel, #ff7b7b);
+        --cancel-soft: var(--u-dark-cancel-soft, #3a1618);
+        --ok: var(--u-dark-ok, #5ad083);
+        --ok-soft: var(--u-dark-ok-soft, #12301d);
+        --holiday-soft: var(--u-dark-holiday-soft, #13273a);
+        --holiday: var(--u-dark-holiday, #7cc0ff);
         --shadow: 0 1px 2px rgba(0, 0, 0, .4);
         color-scheme: dark;
     }
 }
 
 :root[data-theme="dark"] {
-    --bg: #0f1117;
-    --surface: #171a23;
-    --surface-2: #1e2230;
-    --border: #2a2f40;
-    --text: #e6e8ef;
-    --text-muted: #9097ab;
+    --bg: var(--u-dark-bg, #0f1117);
+    --surface: var(--u-dark-surface, #171a23);
+    --surface-2: var(--u-dark-surface-2, #1e2230);
+    --border: var(--u-dark-border, #2a2f40);
+    --text: var(--u-dark-text, #e6e8ef);
+    --text-muted: var(--u-dark-text-muted, #9097ab);
     --accent: #8b87ff;
     --accent-soft: #24244a;
     --accent-text: #0f1117;
-    --changed: #fbbf5c;
-    --changed-soft: #3a2a10;
-    --changed-border: #d9912a;
-    --cancel: #ff7b7b;
-    --cancel-soft: #3a1618;
-    --ok: #5ad083;
-    --ok-soft: #12301d;
-    --holiday-soft: #13273a;
-    --holiday: #7cc0ff;
+    --changed: var(--u-dark-changed, #fbbf5c);
+    --changed-soft: var(--u-dark-changed-soft, #3a2a10);
+    --changed-border: var(--u-dark-changed-border, #d9912a);
+    --cancel: var(--u-dark-cancel, #ff7b7b);
+    --cancel-soft: var(--u-dark-cancel-soft, #3a1618);
+    --ok: var(--u-dark-ok, #5ad083);
+    --ok-soft: var(--u-dark-ok-soft, #12301d);
+    --holiday-soft: var(--u-dark-holiday-soft, #13273a);
+    --holiday: var(--u-dark-holiday, #7cc0ff);
     --shadow: 0 1px 2px rgba(0, 0, 0, .4);
     color-scheme: dark;
+}
+
+/* user accent colour (settings page): --user-accent/-text come from the <html> style attribute */
+:root[data-accent="custom"] {
+    --accent: var(--user-accent);
+    --accent-soft: color-mix(in srgb, var(--user-accent) 12%, var(--surface));
+    --accent-text: var(--user-accent-text);
+}
+@media (prefers-color-scheme: dark) {
+    :root[data-accent="custom"]:not([data-theme="light"]) {
+        --accent: color-mix(in oklab, var(--user-accent) 60%, #ffffff);
+        --accent-soft: color-mix(in srgb, var(--user-accent) 25%, var(--surface));
+        --accent-text: #0f1117;
+    }
+}
+:root[data-accent="custom"][data-theme="dark"] {
+    --accent: color-mix(in oklab, var(--user-accent) 60%, #ffffff);
+    --accent-soft: color-mix(in srgb, var(--user-accent) 25%, var(--surface));
+    --accent-text: #0f1117;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -146,6 +185,7 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
     border: 0; background: transparent; color: var(--text-muted); cursor: pointer;
 }
 .icon-btn:hover { background: var(--surface-2); color: var(--text); }
+.icon-btn.is-active { background: var(--accent-soft); color: var(--accent); }
 .icon-btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 .devbar { background: var(--cancel); color: #fff; text-align: center; font-size: .8rem; font-weight: 600; padding: 4px; }
@@ -349,6 +389,55 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
 .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
 .w-full { width: 100%; }
 .dialog-actions { display: flex; justify-content: flex-end; }
+
+/* ---------- settings ---------- */
+.settings { display: flex; flex-direction: column; gap: 16px; max-width: 640px; }
+.settings__section {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px 18px;
+}
+.settings__section h2 { font-size: 1.05rem; margin-bottom: 2px; }
+.settings__section > p { margin: 0 0 12px; }
+.settings__actions { display: flex; gap: 8px; }
+
+.segmented { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); }
+.segmented__opt {
+    height: 32px; padding: 0 14px; border: 0; border-radius: 8px;
+    background: transparent; color: var(--text-muted); font: inherit; font-weight: 550; cursor: pointer;
+}
+.segmented__opt:hover { color: var(--text); }
+.segmented__opt[aria-checked="true"] { background: var(--surface); color: var(--accent); box-shadow: var(--shadow); }
+
+.swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+.swatch {
+    position: relative; width: 36px; height: 36px; padding: 0; border-radius: 50%;
+    background: var(--swatch); border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--border); cursor: pointer;
+}
+.swatch[aria-checked="true"] { box-shadow: 0 0 0 2px var(--text); }
+.swatch--custom {
+    display: inline-grid; place-items: center; overflow: hidden;
+    background: conic-gradient(#ef4444, #f59e0b, #22c55e, #06b6d4, #6366f1, #d946ef, #ef4444);
+}
+.swatch--custom input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+.preview { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+.preview .nav__link { display: inline-block; }
+
+.colors { width: 100%; border-collapse: collapse; }
+.colors th { text-align: left; font-weight: 550; font-size: .85rem; color: var(--text-muted); padding: 0 0 6px; }
+.colors td { padding: 5px 0; border-top: 1px solid var(--border); }
+.colors td:not(:first-child), .colors th:not(:first-child) { width: 72px; text-align: center; }
+.colors input[type="color"] {
+    width: 40px; height: 28px; padding: 2px; border: 1px solid var(--border); border-radius: 7px;
+    background: var(--surface); cursor: pointer;
+}
+.colors .icon-btn { width: 30px; height: 30px; }
+.demo { display: inline-block; padding: 3px 10px; border-radius: 7px; font-size: .85rem; font-weight: 600; }
+.demo--changed { background: var(--changed-soft); color: var(--changed); box-shadow: inset 3px 0 var(--changed-border); }
+.demo--cancel { background: var(--cancel-soft); color: var(--cancel); }
+.demo--ok { background: var(--ok-soft); color: var(--ok); }
+.demo--holiday { background: var(--holiday-soft); color: var(--holiday); }
+.demo--muted { color: var(--text-muted); font-weight: 400; }
 
 /* ---------- footer ---------- */
 .footer {
