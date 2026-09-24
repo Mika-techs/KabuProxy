@@ -27,6 +27,21 @@
                 </div>
             </div>
 
+            <!-- countdown to the next lesson of today, filled by kabu.js -->
+            <ui:fragment rendered="#{timetableController.currentWeek}">
+                <div class="nextup" id="nextup" role="status" hidden="hidden">
+                    <div class="nextup__row" id="nextup-end" hidden="hidden">
+                        <span class="nextup__label">Stunde endet in</span>
+                        <span class="nextup__timer" id="nextup-end-timer"></span>
+                    </div>
+                    <div class="nextup__row" id="nextup-next" hidden="hidden">
+                        <span class="nextup__label">Nächste Stunde in</span>
+                        <span class="nextup__timer" id="nextup-timer"></span>
+                        <span class="nextup__what" id="nextup-what"></span>
+                    </div>
+                </div>
+            </ui:fragment>
+
             <!-- changes since last visit -->
             <ui:fragment rendered="#{not empty timetableController.changes}">
                 <section class="changes" aria-label="Änderungen">

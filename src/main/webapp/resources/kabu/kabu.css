@@ -186,6 +186,18 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
 .empty--inline { padding: 14px 18px; text-align: left; margin-bottom: 16px; }
 .empty p { margin: 6px 0; }
 
+/* ---------- next lesson countdown ---------- */
+.nextup {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 10px 14px; margin-bottom: 16px; border-radius: var(--radius);
+    background: var(--accent-soft); border: 1px solid var(--accent); color: var(--text);
+}
+.nextup__row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.nextup[hidden], .nextup__row[hidden] { display: none; }
+.nextup__label { color: var(--text-muted); font-weight: 550; }
+.nextup__timer { color: var(--accent); font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.nextup__what { font-weight: 600; }
+
 /* ---------- changes ---------- */
 .changes { background: var(--surface); border: 1px solid var(--changed-border); border-radius: var(--radius); margin-bottom: 18px; overflow: hidden; box-shadow: var(--shadow); }
 .changes__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; background: var(--changed-soft); }
