@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -74,10 +75,18 @@ public class TimetableQueryService
         int periodCount = Math.max(maxPeriod, slots.isEmpty() ? DEFAULT_PERIODS : slots.getLast().getPeriod());
 
         List<PeriodView> periods = new ArrayList<>();
+        Map<Integer, Integer> rowByPeriod = new HashMap<>();
+        int row = 0;
         for (int period = 1; period <= periodCount; period++)
         {
             PeriodSlotEntity slot = slotByPeriod.get(period);
-            periods.add(new PeriodView(period, slot == null ? "" : Formats.time(slot.getStartTime()), slot == null ? "" : Formats.time(slot.getEndTime())));
+            PeriodSlotEntity previous = slotByPeriod.get(period - 1);
+            // a gap between two periods is a break - it gets its own (small) grid row
+            boolean breakBefore = slot != null && previous != null && slot.getStartTime().isAfter(previous.getEndTime());
+            row += breakBefore ? 2 : 1;
+            rowByPeriod.put(period, row);
+            periods.add(new PeriodView(period, row, breakBefore, slot == null ? "" : Formats.time(slot.getStartTime()),
+                slot == null ? "" : Formats.time(slot.getEndTime())));
         }
 
         List<DayView> days = new ArrayList<>();
@@ -86,7 +95,7 @@ public class TimetableQueryService
         {
             LocalDate date = monday.plusDays(i);
             List<LessonView> lessons = lessonsByDay.getOrDefault(date, List.of()).stream()
-                .map(l -> toView(l, slotByPeriod))
+                .map(l -> toView(l, slotByPeriod, rowByPeriod))
                 .toList();
             hasLessons |= !lessons.isEmpty();
             CalendarDayEntity calendarDay = calendar.get(date);
@@ -207,12 +216,13 @@ public class TimetableQueryService
         return new CalendarEntryView(start.getDate(), end.getDate(), start.getKind(), text, end.getDate().isBefore(today), containsToday);
     }
 
-    private static LessonView toView(LessonEntity lesson, Map<Integer, PeriodSlotEntity> slots)
+    private static LessonView toView(LessonEntity lesson, Map<Integer, PeriodSlotEntity> slots, Map<Integer, Integer> rowByPeriod)
     {
         PeriodSlotEntity first = slots.get(lesson.getPeriodFrom());
         PeriodSlotEntity last = slots.get(lesson.getPeriodTo());
         String time = first == null || last == null ? "" : Formats.time(first.getStartTime()) + "–" + Formats.time(last.getEndTime());
-        return new LessonView(lesson.getPeriodFrom(), lesson.getPeriodTo(), lesson.getLane(), lesson.getLaneCount(), lesson.getSubject(),
+        return new LessonView(lesson.getPeriodFrom(), lesson.getPeriodTo(), rowByPeriod.getOrDefault(lesson.getPeriodFrom(), lesson.getPeriodFrom()),
+            rowByPeriod.getOrDefault(lesson.getPeriodTo(), lesson.getPeriodTo()), lesson.getLane(), lesson.getLaneCount(), lesson.getSubject(),
             lesson.getTeacher(), lesson.getRoom(), lesson.getStatus(), lesson.getHint(), lesson.getNote(), time);
     }
 }

@@ -29,6 +29,8 @@ class TimetableParserTest
         assertEquals(10, week.periods().size());
         assertEquals(new ParsedPeriod(1, LocalTime.of(8, 30), LocalTime.of(9, 15)), week.periods().getFirst());
         assertEquals(new ParsedPeriod(10, LocalTime.of(15, 30), LocalTime.of(16, 15)), week.periods().getLast());
+        // digikabu reports 10:00-11:00, the first 15 minutes are the break
+        assertEquals(new ParsedPeriod(3, LocalTime.of(10, 15), LocalTime.of(11, 0)), week.periods().get(2));
 
         assertEquals(5, week.days().size());
         assertEquals(LocalDate.of(2026, 9, 21), week.days().getFirst().date());

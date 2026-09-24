@@ -8,15 +8,19 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Parses the SVG timetable fragment of {@code POST /Stundenplan/StdPlanStd}.
@@ -105,7 +109,24 @@ public final class TimetableParser
             int period = rowOf(parseInt(rect.attr("y")));
             periods.add(new ParsedPeriod(period, LocalTime.parse(texts.get(0).text().trim(), TIME), LocalTime.parse(texts.get(2).text().trim(), TIME)));
         }
-        return periods;
+        return withoutBreaks(periods);
+    }
+
+    /**
+     * digikabu folds breaks into the following period (e.g. 10:00–11:00 instead of break 10:00–10:15 plus 10:15–11:00).
+     * Periods longer than the usual period length are shortened at the start, which leaves the break as a gap.
+     */
+    static List<ParsedPeriod> withoutBreaks(List<ParsedPeriod> periods)
+    {
+        Map<Duration, Long> lengths = periods.stream()
+            .collect(Collectors.groupingBy(p -> Duration.between(p.start(), p.end()), Collectors.counting()));
+        Duration usual = lengths.entrySet().stream()
+            .max(Map.Entry.<Duration, Long>comparingByValue().thenComparing(Map.Entry.comparingByKey(Comparator.reverseOrder())))
+            .map(Map.Entry::getKey)
+            .orElse(null);
+        return periods.stream()
+            .map(p -> Duration.between(p.start(), p.end()).compareTo(usual) > 0 ? new ParsedPeriod(p.period(), p.end().minus(usual), p.end()) : p)
+            .toList();
     }
 
     private static ParsedDay parseDay(Element dayColumn, LocalDate reference)

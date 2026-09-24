@@ -12,7 +12,16 @@ public record WeekView(LocalDate monday, List<PeriodView> periods, List<DayView>
 
     public String gridRows()
     {
-        return "grid-template-rows:repeat(" + Math.max(1, periods.size()) + ", var(--row-h))";
+        if (periods.isEmpty())
+        {
+            return "grid-template-rows:var(--row-h)";
+        }
+        StringBuilder rows = new StringBuilder("grid-template-rows:");
+        for (PeriodView period : periods)
+        {
+            rows.append(period.breakBefore() ? "var(--break-h) var(--row-h) " : "var(--row-h) ");
+        }
+        return rows.toString().trim();
     }
 
     public LocalDate previous()
