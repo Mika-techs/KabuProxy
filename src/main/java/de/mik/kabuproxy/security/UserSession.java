@@ -22,6 +22,10 @@ public class UserSession implements Serializable
     private String username;
     private boolean admin;
     private boolean active;
+    /**
+     * Waiting for an admin; may only use the pending and settings page.
+     */
+    private boolean pending;
 
     public boolean isLoggedIn()
     {

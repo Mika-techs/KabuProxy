@@ -19,8 +19,10 @@ Hibernate 7 · Liquibase · MySQL 8 · log4j2 · Lombok · Jsoup.
 - History: digikabu only shows ±1 week, kabuProxy keeps every week it has seen
 - Exams and holidays as a clean list; block-schedule "kein Unterricht" weeks merged into ranges
 - Own absences only (admins never see other users' absences)
-- Multi-user: users log in via Authentik, an admin links their digikabu account once (password verified by a real
-  login, stored AES-256-GCM encrypted)
+- Multi-user: users log in via Authentik and link their digikabu account under **Einstellungen** (or an admin does it
+  for them); the password is verified by a real login and stored AES-256-GCM encrypted. New users stay pending until
+  an admin activates them – linking alone doesn't activate, and nothing is crawled before activation. Self-service
+  test logins are limited to 5 per 15 min per user.
 
 ## Quick start (local)
 
@@ -31,7 +33,8 @@ cp .env.example .env
 ./scripts/dev.sh            # MySQL in docker + TomEE embedded on http://localhost:8080
 ```
 
-Open <http://localhost:8080>, go to **Admin → Verknüpfen**, enter your digikabu login. The first crawl starts
+Open <http://localhost:8080>, go to **Einstellungen → digikabu-Zugang** (or **Admin → Verknüpfen**), enter your
+digikabu login. The first crawl starts
 immediately; afterwards every 30 min between 06:00 and 22:00.
 
 > `dev.sh` runs `tomee-embedded:run`, which stops when its stdin closes. Run it in a terminal (not with `&`).
@@ -105,7 +108,7 @@ Failures are classified:
 
 | | Reaction |
 |---|---|
-| wrong password | account `AUTH_FAILED`, **paused** until an admin re-enters credentials (avoids account lock) |
+| wrong password | account `AUTH_FAILED`, **paused** until the user (or an admin) re-enters credentials (avoids account lock) |
 | network / 5xx / session lost | `UNAVAILABLE`, exponential back-off 30 min → 8 h |
 | unexpected HTML | `PARSE_ERROR`, raw page stored in `crawl_debug` (7 days), old data kept |
 

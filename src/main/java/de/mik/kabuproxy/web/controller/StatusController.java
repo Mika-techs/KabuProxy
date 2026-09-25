@@ -96,7 +96,7 @@ public class StatusController
         return switch (account.crawlStatus())
         {
             case NEVER -> "Daten werden gerade zum ersten Mal von digikabu geholt …";
-            case AUTH_FAILED -> "digikabu hat dein Passwort abgelehnt. Der Abruf ist pausiert, bis ein Admin die Zugangsdaten aktualisiert.";
+            case AUTH_FAILED -> "digikabu hat dein Passwort abgelehnt. Der Abruf ist pausiert, bis du es unter Einstellungen aktualisierst.";
             case UNAVAILABLE -> "digikabu ist gerade nicht erreichbar – angezeigt werden die zuletzt geladenen Daten.";
             case PARSE_ERROR -> "digikabu hat etwas Unerwartetes geliefert – angezeigt werden die zuletzt geladenen Daten.";
             case OK -> null;

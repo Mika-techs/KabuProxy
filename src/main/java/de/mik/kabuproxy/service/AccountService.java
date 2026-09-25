@@ -55,12 +55,13 @@ public class AccountService
     }
 
     /**
-     * Stores (verified) credentials for a user and activates them. Resets any previous failure state.
+     * Stores (verified) credentials for a user. Resets any previous failure state.
      *
+     * @param activate also activate a pending user (admin linking)
      * @return account id
      */
     @Transactional
-    public long saveCredentials(long userId, String digikabuUsername, String password, ParsedHeader header)
+    public long saveCredentials(long userId, String digikabuUsername, String password, ParsedHeader header, boolean activate)
     {
         AppUserEntity user = userRepository.findById(userId).orElseThrow();
         DigikabuAccountEntity account = accountRepository.findByUserId(userId).orElse(null);
@@ -84,7 +85,7 @@ public class AccountService
         {
             accountRepository.persist(account);
         }
-        if (user.getStatus() == UserStatus.PENDING)
+        if (activate && user.getStatus() == UserStatus.PENDING)
         {
             user.setStatus(UserStatus.ACTIVE);
         }

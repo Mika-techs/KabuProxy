@@ -68,4 +68,10 @@ public class UserService
     {
         return userRepository.findById(userId).map(AppUserEntity::getStatus).orElse(null);
     }
+
+    @Transactional
+    public boolean isActive(long userId)
+    {
+        return status(userId) == UserStatus.ACTIVE;
+    }
 }

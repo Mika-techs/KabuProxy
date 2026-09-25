@@ -47,7 +47,7 @@
                                      styleClass="ui-button-sm" disabled="#{not adminController.cipherReady}"/>
                     <p:commandButton value="Abrufen" icon="pi pi-refresh" rendered="#{u.hasAccount}" action="#{adminController.crawlNow(u)}"
                                      update="growl" styleClass="ui-button-sm ui-button-outlined"/>
-                    <p:commandButton value="Aktivieren" icon="pi pi-check" rendered="#{u.status eq 'DISABLED'}" action="#{adminController.activate(u)}"
+                    <p:commandButton value="Aktivieren" icon="pi pi-check" rendered="#{u.status ne 'ACTIVE'}" action="#{adminController.activate(u)}"
                                      update="@form" styleClass="ui-button-sm ui-button-outlined ui-button-success"/>
                     <p:commandButton value="Sperren" icon="pi pi-ban" rendered="#{u.status ne 'DISABLED'}" action="#{adminController.disable(u)}"
                                      update="@form" styleClass="ui-button-sm ui-button-outlined ui-button-warning"/>

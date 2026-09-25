@@ -296,7 +296,8 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
     --lesson-bar: var(--accent);
     overflow: hidden;
 }
-.lesson::before {
+/* side bar highlight: same look everywhere (lesson, exam card, today entry, settings demo) */
+.lesson::before, .examcard::before, .entry--today::before, .demo--changed::before {
     content: ""; position: absolute; left: 0; top: 0; bottom: 0;
     border-left: 4px solid var(--lesson-bar);
 }
@@ -342,13 +343,13 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
 
 /* ---------- calendar ---------- */
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 20px; }
-.examcard { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--cancel); border-radius: var(--radius); padding: 12px 14px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 3px; }
+.examcard { position: relative; overflow: hidden; --lesson-bar: var(--cancel); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px 12px 17px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 3px; }
 .examcard__date { font-size: .85rem; color: var(--text-muted); font-weight: 600; }
 .examcard__text { font-weight: 700; }
 .month { margin-bottom: 20px; }
 .month__title { font-size: 1.05rem; margin: 0 0 8px; color: var(--text-muted); font-weight: 600; }
 .month__list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
-.entry { display: grid; grid-template-columns: 150px 1fr; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--border); }
+.entry { position: relative; display: grid; grid-template-columns: 150px 1fr; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--border); }
 .entry:first-child { border-top: 0; }
 .entry__date { color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .entry--event .entry__text { font-weight: 600; }
@@ -358,7 +359,7 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
 .entry--holiday .entry__text { color: var(--holiday); font-weight: 600; }
 .entry--noschool .entry__text { color: var(--text-muted); font-style: italic; }
 .entry--past { opacity: .55; }
-.entry--today { box-shadow: inset 4px 0 0 var(--accent); }
+.entry--today { --lesson-bar: var(--accent); }
 
 /* ---------- absences ---------- */
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 14px 0 18px; }
@@ -399,6 +400,8 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
 .settings__section h2 { font-size: 1.05rem; margin-bottom: 2px; }
 .settings__section > p { margin: 0 0 12px; }
 .settings__actions { display: flex; gap: 8px; }
+.settings--first { margin-bottom: 16px; }
+.creds__current { margin-bottom: 12px; }
 
 .segmented { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); }
 .segmented__opt {
@@ -433,7 +436,7 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
 }
 .colors .icon-btn { width: 30px; height: 30px; }
 .demo { display: inline-block; padding: 3px 10px; border-radius: 7px; font-size: .85rem; font-weight: 600; }
-.demo--changed { background: var(--changed-soft); color: var(--changed); box-shadow: inset 3px 0 var(--changed-border); }
+.demo--changed { position: relative; overflow: hidden; padding-left: 13px; --lesson-bar: var(--changed-border); background: var(--changed-soft); color: var(--changed); }
 .demo--cancel { background: var(--cancel-soft); color: var(--cancel); }
 .demo--ok { background: var(--ok-soft); color: var(--ok); }
 .demo--holiday { background: var(--holiday-soft); color: var(--holiday); }

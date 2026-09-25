@@ -1,12 +1,11 @@
 package de.mik.kabuproxy.web.controller;
 
 import de.mik.kabuproxy.crawler.CrawlService;
-import de.mik.kabuproxy.crypto.CredentialCipher;
-import de.mik.kabuproxy.digikabu.DigikabuException;
-import de.mik.kabuproxy.digikabu.parser.ParsedHeader;
+import de.mik.kabuproxy.persistence.entities.CrawlStatus;
 import de.mik.kabuproxy.persistence.entities.UserStatus;
 import de.mik.kabuproxy.security.UserSession;
 import de.mik.kabuproxy.service.AccountService;
+import de.mik.kabuproxy.service.CredentialService;
 import de.mik.kabuproxy.web.model.AdminUserView;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,7 +30,7 @@ public class AdminController implements Serializable
     @Inject private transient Logger logger;
     @Inject private transient AccountService accountService;
     @Inject private transient CrawlService crawlService;
-    @Inject private transient CredentialCipher cipher;
+    @Inject private transient CredentialService credentialService;
     @Inject private UserSession userSession;
 
     @Getter private List<AdminUserView> users;
@@ -49,7 +48,7 @@ public class AdminController implements Serializable
 
     public boolean isCipherReady()
     {
-        return cipher.isConfigured();
+        return credentialService.isReady();
     }
 
     public void select(AdminUserView user)
@@ -60,45 +59,29 @@ public class AdminController implements Serializable
         digikabuPassword = null;
     }
 
-    /**
-     * Verifies the credentials with one real login first, so typos never end up in the crawler.
-     */
     public void saveCredentials()
     {
-        logger.info("saving digikabu credentials for user {}", selectedUserId);
-        if (selectedUserId == null || isBlank(digikabuUsername) || isBlank(digikabuPassword))
+        if (selectedUserId == null)
         {
-            Messages.error("Benutzername und Passwort angeben.");
+            Messages.error("Kein Benutzer ausgewählt.");
             return;
         }
-        String username = digikabuUsername.trim();
-        ParsedHeader header;
-        try
+        logger.info("admin links digikabu credentials for user {}", selectedUserId);
+        if (Messages.linkResult(credentialService.linkByAdmin(selectedUserId, digikabuUsername, digikabuPassword), "Erster Abruf läuft."))
         {
-            header = crawlService.testLogin(username, digikabuPassword);
+            digikabuPassword = null;
+            reload();
         }
-        catch (DigikabuException.AuthFailed e)
-        {
-            Messages.error("digikabu hat die Zugangsdaten abgelehnt – nichts gespeichert.");
-            return;
-        }
-        catch (DigikabuException e)
-        {
-            logger.warn("test login failed: {}", e.getMessage());
-            Messages.error("Test-Login fehlgeschlagen: " + e.getMessage());
-            return;
-        }
-
-        long accountId = accountService.saveCredentials(selectedUserId, username, digikabuPassword, header);
-        digikabuPassword = null;
-        crawlService.submit(accountId);
-        Messages.info("Gespeichert: " + header.displayName() + " (" + header.className() + "). Erster Abruf läuft.");
-        reload();
     }
 
     public void activate(AdminUserView user)
     {
         accountService.setUserStatus(user.userId(), UserStatus.ACTIVE);
+        if (user.account() != null && user.account().crawlStatus() == CrawlStatus.NEVER)
+        {
+            // the user linked their own account while pending, nothing was crawled yet
+            crawlService.submit(user.account().accountId());
+        }
         reload();
     }
 
@@ -137,10 +120,5 @@ public class AdminController implements Serializable
     public void reload()
     {
         users = accountService.listUsers();
-    }
-
-    private static boolean isBlank(String value)
-    {
-        return value == null || value.isBlank();
     }
 }

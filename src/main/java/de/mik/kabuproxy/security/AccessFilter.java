@@ -21,7 +21,8 @@ import java.util.List;
 
 /**
  * Runs after the container authenticated the caller (Authentik or dev login):
- * registers unknown users as PENDING, keeps pending/disabled users on the waiting page and guards the admin page.
+ * registers unknown users as PENDING, keeps pending/disabled users on the waiting page (pending users may still link their
+ * digikabu account on the settings page) and guards the admin page.
  */
 @WebFilter(filterName = "AccessFilter", urlPatterns = "/*")
 public class AccessFilter extends HttpFilter
@@ -29,6 +30,7 @@ public class AccessFilter extends HttpFilter
     private static final long serialVersionUID = 1L;
 
     private static final String PENDING_PAGE = "/pending.xhtml";
+    private static final String SETTINGS_PAGE = "/einstellungen.xhtml";
     private static final String ADMIN_PAGE = "/admin.xhtml";
     private static final String THEME_SERVLET = "/theme";
     private static final List<String> OPEN_PREFIXES = List.of("/health", "/callback", "/logout", "/jakarta.faces.resource/", "/resources/",
@@ -73,8 +75,10 @@ public class AccessFilter extends HttpFilter
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
-        boolean blocked = status == UserStatus.DISABLED || (status == UserStatus.PENDING && !admin);
-        if (blocked && !PENDING_PAGE.equals(path) && !THEME_SERVLET.equals(path))
+        boolean pending = status == UserStatus.PENDING && !admin;
+        userSession.setPending(pending);
+        boolean allowed = PENDING_PAGE.equals(path) || THEME_SERVLET.equals(path) || (pending && SETTINGS_PAGE.equals(path));
+        if ((status == UserStatus.DISABLED || pending) && !allowed)
         {
             response.sendRedirect(request.getContextPath() + PENDING_PAGE);
             return;

@@ -34,12 +34,12 @@ For a local test, add `http://localhost:8080/callback` as a second redirect URI.
 
 Optional: *Policy / Group / User Bindings* → bind a group (e.g. `kabuproxy-users`) so only its members can open
 the app at all. Without a binding every Authentik user can log in — they just land on the "waiting for activation"
-page until an admin links their digikabu account.
+page until an admin activates them (they can already link their own digikabu account under *Einstellungen*).
 
 ## 3. Admin group (Directory → Groups → Create)
 
 Create a group named **`kabuproxy-admin`** (or whatever you set in `KABU_OIDC_ADMIN_GROUP`) and add yourself.
-Members see the *Admin* tab, are activated automatically on first login, and can link digikabu accounts for others.
+Members see the *Admin* tab, are activated automatically on first login, and can activate users and link digikabu accounts for others.
 Group changes take effect on the next login (log out + in).
 
 ## 4. "Never log in again" – session length
