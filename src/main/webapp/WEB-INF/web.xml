@@ -56,11 +56,12 @@
         </auth-constraint>
     </security-constraint>
 
-    <!-- ... except the healthcheck and static resources (no auth-constraint = open) -->
+    <!-- ... except the healthcheck, logout and static resources (no auth-constraint = open) -->
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>open</web-resource-name>
             <url-pattern>/health</url-pattern>
+            <url-pattern>/logout</url-pattern>
             <url-pattern>/jakarta.faces.resource/*</url-pattern>
             <url-pattern>/resources/*</url-pattern>
             <url-pattern>/favicon.svg</url-pattern>
