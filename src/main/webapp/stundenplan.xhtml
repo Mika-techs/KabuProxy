@@ -98,7 +98,7 @@
                             <div class="day__free" style="grid-row:1 / -1;grid-column:1 / -1">#{d.freeLabel}</div>
                         </ui:fragment>
                         <ui:repeat value="#{d.lessons}" var="l">
-                            <article class="#{l.cssClass} #{l.singlePeriod ? 'lesson--short' : ''}" style="#{l.gridStyle}" data-time="#{l.timeLabel}">
+                            <article class="#{l.cssClass} #{l.singlePeriod ? 'lesson--short' : ''}" style="#{l.gridStyle};#{theme.settings.lessonStyle(l.subject, l.teacher)}" data-time="#{l.timeLabel}">
                                 <div class="lesson__subject">#{l.subject}</div>
                                 <div class="lesson__meta">
                                     <span>#{l.teacher}</span>
@@ -127,7 +127,7 @@
                         </ui:fragment>
                         <ul class="daycard__list">
                             <ui:repeat value="#{d.lessons}" var="l">
-                                <li class="#{l.cssClass}" data-time="#{l.timeLabel}">
+                                <li class="#{l.cssClass}" style="#{theme.settings.lessonStyle(l.subject, l.teacher)}" data-time="#{l.timeLabel}">
                                     <span class="row__period">#{l.periodLabel}</span>
                                     <span class="row__time">#{l.timeLabel}</span>
                                     <span class="row__subject">#{l.subject}</span>

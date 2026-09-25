@@ -2,6 +2,7 @@ package de.mik.kabuproxy.persistence.repository;
 
 import de.mik.kabuproxy.persistence.entities.LessonChangeEntity;
 import de.mik.kabuproxy.persistence.entities.LessonEntity;
+import de.mik.kabuproxy.persistence.entities.LessonStatus;
 import de.mik.kabuproxy.persistence.entities.SchoolClassEntity;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -27,6 +28,28 @@ public class LessonRepository
             .setParameter("classId", classId)
             .setParameter("from", from)
             .setParameter("to", to)
+            .getResultList();
+    }
+
+    /**
+     * Every subject the class has had so far (for the lesson colours in the settings).
+     */
+    public List<String> findSubjects(long classId)
+    {
+        return em.createQuery("select distinct l.subject from LessonEntity l where l.schoolClass.id = :classId and l.subject is not null", String.class)
+            .setParameter("classId", classId)
+            .getResultList();
+    }
+
+    /**
+     * Subject/teacher pairs of the class's regular lessons (substitutes don't count as the subject's teachers).
+     */
+    public List<Object[]> findRegularTeachers(long classId)
+    {
+        return em.createQuery("select distinct l.subject, l.teacher from LessonEntity l where l.schoolClass.id = :classId"
+                    + " and l.subject is not null and l.teacher is not null and l.status = :regular", Object[].class)
+            .setParameter("classId", classId)
+            .setParameter("regular", LessonStatus.REGULAR)
             .getResultList();
     }
 

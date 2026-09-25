@@ -19,6 +19,7 @@
     --ok-soft: var(--u-light-ok-soft, #e7f6ec);
     --holiday-soft: var(--u-light-holiday-soft, #eaf5ff);
     --holiday: var(--u-light-holiday, #1d6fb8);
+    --lesson-mix: 100%;
     --shadow: 0 1px 2px rgba(20, 24, 40, .06), 0 2px 8px rgba(20, 24, 40, .05);
     --radius: 12px;
     --row-h: 64px;
@@ -67,6 +68,7 @@
         --ok-soft: var(--u-dark-ok-soft, #12301d);
         --holiday-soft: var(--u-dark-holiday-soft, #13273a);
         --holiday: var(--u-dark-holiday, #7cc0ff);
+        --lesson-mix: 60%;
         --shadow: 0 1px 2px rgba(0, 0, 0, .4);
         color-scheme: dark;
     }
@@ -91,6 +93,7 @@
     --ok-soft: var(--u-dark-ok-soft, #12301d);
     --holiday-soft: var(--u-dark-holiday-soft, #13273a);
     --holiday: var(--u-dark-holiday, #7cc0ff);
+    --lesson-mix: 60%;
     --shadow: 0 1px 2px rgba(0, 0, 0, .4);
     color-scheme: dark;
 }
@@ -293,11 +296,16 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
     padding: 6px 9px 6px 13px;
     border-radius: 9px;
     background: var(--surface-2);
-    --lesson-bar: var(--accent);
     overflow: hidden;
 }
+/* per-subject colour (settings page) arrives as --lesson-color in the style attribute, lightened in dark mode like the
+   accent; while it is unset --lesson-custom is unset too and the bar falls back to the accent */
+.lesson, .demo--lesson {
+    --lesson-custom: color-mix(in oklab, var(--lesson-color) var(--lesson-mix), #ffffff);
+    --lesson-bar: var(--lesson-custom, var(--accent));
+}
 /* side bar highlight: same look everywhere (lesson, exam card, today entry, settings demo) */
-.lesson::before, .examcard::before, .entry--today::before, .demo--changed::before {
+.lesson::before, .examcard::before, .entry--today::before, .demo--changed::before, .demo--lesson::before {
     content: ""; position: absolute; left: 0; top: 0; bottom: 0;
     border-left: 4px solid var(--lesson-bar);
 }
@@ -438,6 +446,11 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
 .colors .icon-btn { width: 30px; height: 30px; }
 .demo { display: inline-block; padding: 3px 10px; border-radius: 7px; font-size: .85rem; font-weight: 600; }
 .demo--changed { position: relative; overflow: hidden; padding-left: 13px; --lesson-bar: var(--changed-border); background: var(--changed-soft); color: var(--changed); }
+.demo--lesson { position: relative; overflow: hidden; padding-left: 13px; background: var(--surface-2); max-width: 100%; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+.lesson-colors td:first-child { max-width: 0; width: 100%; }
+.lesson-colors__teacher td { border-top-style: dashed; }
+.lesson-colors__teacher td:first-child { padding-left: 22px; }
+.lesson-colors__teacher .demo--lesson { font-weight: 550; }
 .demo--cancel { background: var(--cancel-soft); color: var(--cancel); }
 .demo--ok { background: var(--ok-soft); color: var(--ok); }
 .demo--holiday { background: var(--holiday-soft); color: var(--holiday); }

@@ -47,6 +47,14 @@ public class UserSettingsEntity
     @Column(name = "color", nullable = false)
     private Map<String, String> colors = new HashMap<>();
 
+    /**
+     * Subject (+ teacher) → {@code #rrggbb}; lessons without an entry use the subject's colour, then the accent.
+     */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_lesson_color", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "color", nullable = false)
+    private Map<LessonColorKey, String> lessonColors = new HashMap<>();
+
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 }

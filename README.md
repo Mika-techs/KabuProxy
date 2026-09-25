@@ -15,7 +15,8 @@ Hibernate 7 · Liquibase · MySQL 8 · log4j2 · Lombok · Jsoup.
 - Per-user settings page (Einstellungen, stored in the DB so they follow you across devices): light/dark/system
   mode, accent colour (presets or free pick, auto-lightened in dark mode) and the base theme colours (background,
   surfaces, text, change/cancel/new/holiday markers) separately for light and dark
-- Own lesson colours per subject (side bar in the timetable, default = accent colour, lightened in dark mode)
+- Own lesson colours per subject, optionally per teacher for subjects with several (side bar in the timetable; teacher →
+  subject → accent colour, lightened in dark mode)
 - Changes (Änderung, new/cancelled lessons) highlighted, plus "N changes since your last visit"
 - History: digikabu only shows ±1 week, kabuProxy keeps every week it has seen
 - Exams and holidays as a clean list; block-schedule "kein Unterricht" weeks merged into ranges

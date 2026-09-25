@@ -115,6 +115,44 @@
                 </div>
             </section>
 
+            <section class="settings__section">
+                <h2>#{msg['settings.lessonColors']}</h2>
+                <p class="muted small">#{msg['settings.lessonColorsHint']}</p>
+                <h:panelGroup layout="block" styleClass="muted small" rendered="#{empty settingsController.lessonRows}">
+                    #{msg['settings.lessonColorsEmpty']}
+                </h:panelGroup>
+                <h:panelGroup rendered="#{not empty settingsController.lessonRows}">
+                    <table class="colors lesson-colors">
+                        <thead>
+                            <tr><th scope="col">#{msg['settings.subjectColumn']}</th><th scope="col">#{msg['settings.colorColumn']}</th><th scope="col"><span class="skip">#{msg['settings.reset']}</span></th></tr>
+                        </thead>
+                        <tbody>
+                            <ui:repeat value="#{settingsController.lessonRows}" var="r">
+                                <tr class="#{r.teacherRow ? 'lesson-colors__teacher' : ''}" data-subject="#{r.subject}" data-teacher="#{r.teacher}">
+                                    <td>
+                                        <span class="demo demo--lesson" style="#{settingsController.lessonStyle(r)}">
+                                            #{r.teacherRow ? r.teacher : r.subject}<ui:fragment rendered="#{r.teacherRow}"> <span class="muted">· #{r.subject}</span></ui:fragment>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <!-- the picker has no name: the hidden field is what gets saved, empty = subject colour / accent -->
+                                        <input type="color" class="lesson-picker" value="#{settingsController.lessonPickerColor(r)}"
+                                               aria-label="#{r.teacherRow ? i18n.format('settings.teacherColorLabel', r.subject, r.teacher) : i18n.format('settings.lessonColorLabel', r.subject)}"/>
+                                        <h:inputHidden value="#{r.color}" a:class="lesson-color"/>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="icon-btn lesson-reset" title="#{r.teacherRow ? msg['settings.teacherColorDefault'] : msg['settings.lessonColorDefault']}"
+                                                aria-label="#{i18n.format('settings.colorReset', r.teacherRow ? r.subject.concat(' · ').concat(r.teacher) : r.subject)}">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4"/></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                        </tbody>
+                    </table>
+                </h:panelGroup>
+            </section>
+
             <div class="settings__actions">
                 <h:commandButton value="#{msg['settings.save']}" action="#{settingsController.save}" styleClass="btn btn--active"/>
                 <h:commandButton value="#{msg['settings.reset']}" action="#{settingsController.reset}" styleClass="btn btn--ghost"/>

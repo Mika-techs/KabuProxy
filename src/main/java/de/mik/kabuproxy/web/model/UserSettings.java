@@ -1,5 +1,6 @@
 package de.mik.kabuproxy.web.model;
 
+import de.mik.kabuproxy.persistence.entities.LessonColorKey;
 import de.mik.kabuproxy.persistence.entities.ThemeMode;
 
 import java.util.Collections;
@@ -10,13 +11,19 @@ import java.util.regex.Pattern;
 
 /**
  * A user's UI preferences. {@code accentColor} is either null (built-in accent) or a normalized {@code #rrggbb};
- * {@code colors} maps {@link ThemeColor} keys to normalized colours and only holds the ones that differ from the built-ins.
+ * {@code colors} maps {@link ThemeColor} keys to normalized colours and only holds the ones that differ from the built-ins;
+ * {@code lessonColors} maps a subject, or a subject taught by one teacher, to a normalized colour (see {@link #lessonColor}).
  */
-public record UserSettings(ThemeMode themeMode, String accentColor, Map<String, String> colors)
+public record UserSettings(ThemeMode themeMode, String accentColor, Map<String, String> colors, Map<LessonColorKey, String> lessonColors)
 {
-    public static final UserSettings DEFAULT = new UserSettings(ThemeMode.SYSTEM, null, Map.of());
+    public static final UserSettings DEFAULT = new UserSettings(ThemeMode.SYSTEM, null, Map.of(), Map.of());
     public static final String DEFAULT_ACCENT = "#4f46e5";
 
+    /**
+     * Length of {@code lesson.subject}/{@code lesson.teacher} and the matching {@code user_lesson_color} columns.
+     */
+    private static final int MAX_KEY_LENGTH = 100;
+    private static final int MAX_LESSON_COLORS = 200;
     private static final Pattern HEX_COLOR = Pattern.compile("#[0-9a-f]{6}");
 
     public UserSettings
@@ -24,6 +31,7 @@ public record UserSettings(ThemeMode themeMode, String accentColor, Map<String, 
         themeMode = themeMode == null ? ThemeMode.SYSTEM : themeMode;
         accentColor = normalizeColor(accentColor);
         colors = sanitize(colors);
+        lessonColors = sanitizeLessonColors(lessonColors);
     }
 
     /**
@@ -60,9 +68,31 @@ public record UserSettings(ThemeMode themeMode, String accentColor, Map<String, 
         return Collections.unmodifiableMap(clean);
     }
 
+    /**
+     * Keeps valid colours of non-blank subjects (keys are trimmed, as stored in {@code lesson}); bounded because the keys
+     * come from a form.
+     */
+    private static Map<LessonColorKey, String> sanitizeLessonColors(Map<LessonColorKey, String> lessonColors)
+    {
+        Map<LessonColorKey, String> clean = new TreeMap<>();
+        if (lessonColors != null)
+        {
+            lessonColors.forEach((key, value) ->
+            {
+                String color = normalizeColor(value);
+                if (key != null && !key.getSubject().isEmpty() && key.getSubject().length() <= MAX_KEY_LENGTH
+                    && key.getTeacher().length() <= MAX_KEY_LENGTH && color != null && clean.size() < MAX_LESSON_COLORS)
+                {
+                    clean.put(new LessonColorKey(key.getSubject(), key.getTeacher()), color);
+                }
+            });
+        }
+        return Collections.unmodifiableMap(clean);
+    }
+
     public UserSettings withThemeMode(ThemeMode mode)
     {
-        return new UserSettings(mode, accentColor, colors);
+        return new UserSettings(mode, accentColor, colors, lessonColors);
     }
 
     /**
@@ -94,6 +124,37 @@ public record UserSettings(ThemeMode themeMode, String accentColor, Map<String, 
     public String color(String key)
     {
         return colors.getOrDefault(key, ThemeColor.defaultFor(key));
+    }
+
+    /**
+     * The user's colour for a lesson: the one for this subject and teacher, else the subject's, else null (accent).
+     */
+    public String lessonColor(String subject, String teacher)
+    {
+        if (subject == null)
+        {
+            return null;
+        }
+        String color = teacher == null || teacher.isBlank() ? null : lessonColors.get(new LessonColorKey(subject, teacher));
+        return color != null ? color : lessonColors.get(LessonColorKey.of(subject));
+    }
+
+    /**
+     * Inline style for a lesson: {@code --lesson-color}, which kabu.css turns into the side bar (lightened in dark mode);
+     * empty when the lesson follows the accent.
+     */
+    public String lessonStyle(String subject, String teacher)
+    {
+        return lessonColorStyle(lessonColor(subject, teacher));
+    }
+
+    /**
+     * {@code --lesson-color} for a colour; empty when it is null or not a strict {@code #rrggbb}.
+     */
+    public static String lessonColorStyle(String color)
+    {
+        String normalized = normalizeColor(color);
+        return normalized == null ? "" : "--lesson-color: " + normalized + ";";
     }
 
     /**

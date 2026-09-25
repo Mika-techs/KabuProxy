@@ -54,6 +54,7 @@
         });
         picker.parentNode.setAttribute('aria-checked', String(!preset));
         picker.value = color;
+        refreshLessonColors();
         if (color === DEFAULT_ACCENT) {
             root.dataset.accent = 'default';
             root.style.removeProperty('--user-accent');
@@ -94,6 +95,42 @@
                 input.value = input.dataset.default;
                 applyColor(input);
             });
+        });
+    });
+
+    // lesson colours: the hidden fields are saved (empty = follow); a teacher row falls back to its subject's row, a
+    // subject row to the accent. The demos get the same --lesson-color as the timetable.
+    var lessonRows = Array.prototype.slice.call(document.querySelectorAll('.lesson-colors tbody tr'));
+    function subjectRow(row) {
+        return lessonRows.filter(function (r) {
+            return !r.dataset.teacher && r.dataset.subject === row.dataset.subject;
+        })[0];
+    }
+    function refreshLessonColors() {
+        // also called by selectAccent() during init, before lessonRows is set
+        (lessonRows || []).forEach(function (row) {
+            var own = row.querySelector('.lesson-color').value;
+            var parent = row.dataset.teacher ? subjectRow(row) : null;
+            var color = own || (parent && parent.querySelector('.lesson-color').value) || '';
+            var demo = row.querySelector('.demo--lesson');
+            if (color) {
+                demo.style.setProperty('--lesson-color', color);
+            } else {
+                demo.style.removeProperty('--lesson-color');
+            }
+            row.querySelector('.lesson-picker').value = color || (picker ? picker.value : DEFAULT_ACCENT);
+        });
+    }
+    lessonRows.forEach(function (row) {
+        var lessonPicker = row.querySelector('.lesson-picker');
+        var field = row.querySelector('.lesson-color');
+        lessonPicker.addEventListener('input', function () {
+            field.value = lessonPicker.value.toLowerCase();
+            refreshLessonColors();
+        });
+        row.querySelector('.lesson-reset').addEventListener('click', function () {
+            field.value = '';
+            refreshLessonColors();
         });
     });
 

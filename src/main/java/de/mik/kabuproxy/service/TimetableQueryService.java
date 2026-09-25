@@ -32,6 +32,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -103,6 +105,31 @@ public class TimetableQueryService
                 calendarDay == null ? null : calendarDay.getText()));
         }
         return new WeekView(monday, periods, days, hasLessons);
+    }
+
+    /**
+     * The class's subjects with the teachers of their regular lessons, both sorted for display.
+     */
+    @Transactional
+    public Map<String, List<String>> subjectTeachers(long classId)
+    {
+        Map<String, TreeSet<String>> teachers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        lessonRepository.findSubjects(classId).stream()
+            .map(String::trim)
+            .filter(subject -> !subject.isEmpty())
+            .forEach(subject -> teachers.computeIfAbsent(subject, k -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
+        for (Object[] row : lessonRepository.findRegularTeachers(classId))
+        {
+            String teacher = ((String) row[1]).trim();
+            TreeSet<String> subjectTeachers = teachers.get(((String) row[0]).trim());
+            if (subjectTeachers != null && !teacher.isEmpty())
+            {
+                subjectTeachers.add(teacher);
+            }
+        }
+        Map<String, List<String>> result = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        teachers.forEach((subject, names) -> result.put(subject, List.copyOf(names)));
+        return result;
     }
 
     /**
