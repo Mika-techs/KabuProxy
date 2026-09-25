@@ -14,5 +14,7 @@
             <base-name>i18n.messages</base-name>
             <var>msg</var>
         </resource-bundle>
+        <!-- adds the build stamp to kabu.css/kabu.js URLs (cache busting) -->
+        <resource-handler>de.mik.kabuproxy.web.VersionedResourceHandler</resource-handler>
     </application>
 </faces-config>
