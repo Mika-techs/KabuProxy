@@ -23,6 +23,9 @@ COPY docker/tomee.xml /usr/local/tomee/conf/tomee.xml
 COPY docker/entrypoint.sh /opt/entrypoint.sh
 RUN chmod 755 /opt/entrypoint.sh
 
+# build timestamp shown on the admin page (last layer, so any change above refreshes it)
+RUN date -u +%Y-%m-%dT%H:%M:%SZ > /usr/local/tomee/webapps/ROOT/WEB-INF/build-time
+
 EXPOSE 8080
 ENTRYPOINT ["/opt/entrypoint.sh"]
 CMD ["catalina.sh", "run"]

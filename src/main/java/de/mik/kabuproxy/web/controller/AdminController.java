@@ -6,16 +6,24 @@ import de.mik.kabuproxy.persistence.entities.UserStatus;
 import de.mik.kabuproxy.security.UserSession;
 import de.mik.kabuproxy.service.AccountService;
 import de.mik.kabuproxy.service.CredentialService;
+import de.mik.kabuproxy.web.I18n;
 import de.mik.kabuproxy.web.model.AdminUserView;
+import de.mik.kabuproxy.web.model.Formats;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.logging.log4j.Logger;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 /**
@@ -26,6 +34,8 @@ import java.util.List;
 public class AdminController implements Serializable
 {
     private static final long serialVersionUID = 1L;
+    /** written by the Dockerfile at image build time (UTC, ISO-8601); missing in dev runs */
+    private static final String BUILD_TIME_RESOURCE = "/WEB-INF/build-time";
 
     @Inject private transient Logger logger;
     @Inject private transient AccountService accountService;
@@ -34,6 +44,7 @@ public class AdminController implements Serializable
     @Inject private UserSession userSession;
 
     @Getter private List<AdminUserView> users;
+    @Getter private String buildTimeLabel;
 
     @Getter @Setter private Long selectedUserId;
     @Getter @Setter private String selectedUserLabel;
@@ -43,6 +54,7 @@ public class AdminController implements Serializable
     @PostConstruct
     void init()
     {
+        buildTimeLabel = readBuildTime();
         reload();
     }
 
@@ -120,5 +132,22 @@ public class AdminController implements Serializable
     public void reload()
     {
         users = accountService.listUsers();
+    }
+
+    private String readBuildTime()
+    {
+        try (InputStream in = FacesContext.getCurrentInstance().getExternalContext().getResourceAsStream(BUILD_TIME_RESOURCE))
+        {
+            if (in == null)
+            {
+                return I18n.text("admin.buildUnknown");
+            }
+            return Formats.relative(Instant.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8).trim()));
+        }
+        catch (IOException | DateTimeParseException e)
+        {
+            logger.warn("cannot read {}: {}", BUILD_TIME_RESOURCE, e.getMessage());
+            return I18n.text("admin.buildUnknown");
+        }
     }
 }

@@ -59,6 +59,7 @@
 
             <p:commandButton value="#{msg['admin.reload']}" icon="pi pi-sync" action="#{adminController.reload}" update="@form"
                              styleClass="ui-button-outlined admin-reload"/>
+            <div class="muted small admin-build">#{msg['admin.buildTime']} #{adminController.buildTimeLabel}</div>
 
             <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true">
                 <p:commandButton value="#{msg['admin.deleteYes']}" type="button" styleClass="ui-confirmdialog-yes ui-button-danger"/>
