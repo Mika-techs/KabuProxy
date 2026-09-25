@@ -40,7 +40,17 @@ public class KabuAuthenticationMechanismHandler implements HttpAuthenticationMec
     public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext context)
         throws AuthenticationException
     {
-        return mechanism().validateRequest(request, response, context);
+        if (config.isDevAuth())
+        {
+            return devMechanism.get().validateRequest(request, response, context);
+        }
+        AuthenticationStatus status = oidcMechanism.get().validateRequest(request, response, context);
+        if (status == AuthenticationStatus.SEND_FAILURE && request.getUserPrincipal() == null && OidcCallbackParams.present(request))
+        {
+            // stale callback URL (reload after a restart, bookmark): its state is gone, so start a fresh login
+            return context.redirect(OidcCallbackParams.strippedUrl(request));
+        }
+        return status;
     }
 
     @Override

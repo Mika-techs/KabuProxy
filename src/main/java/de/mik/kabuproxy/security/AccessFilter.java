@@ -53,6 +53,13 @@ public class AccessFilter extends HttpFilter
             return;
         }
 
+        if (OidcCallbackParams.present(request))
+        {
+            // fresh login landed on the original page with code/state still in the URL
+            response.sendRedirect(OidcCallbackParams.strippedUrl(request));
+            return;
+        }
+
         boolean admin = request.isUserInRole(config.getAdminGroup());
         if (!userSession.isLoggedIn())
         {
