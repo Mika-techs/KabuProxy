@@ -12,23 +12,23 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 /**
- * Key of a lesson colour: a subject, optionally narrowed to one teacher. {@code teacher} is empty for the colour of the
- * whole subject (it is part of the primary key, so it can't be null).
+ * Key of a lesson colour or display name: a subject, optionally narrowed to one teacher. {@code teacher} is empty for
+ * the whole subject (it is part of the primary key, so it can't be null).
  */
 @Getter
 @EqualsAndHashCode
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Embeddable
-public class LessonColorKey implements Serializable, Comparable<LessonColorKey>
+public class LessonKey implements Serializable, Comparable<LessonKey>
 {
     private static final long serialVersionUID = 1L;
 
-    private static final Comparator<LessonColorKey> ORDER = Comparator
-        .comparing(LessonColorKey::getSubject, String.CASE_INSENSITIVE_ORDER)
-        .thenComparing(LessonColorKey::getSubject)
-        .thenComparing(LessonColorKey::getTeacher, String.CASE_INSENSITIVE_ORDER)
-        .thenComparing(LessonColorKey::getTeacher);
+    private static final Comparator<LessonKey> ORDER = Comparator
+        .comparing(LessonKey::getSubject, String.CASE_INSENSITIVE_ORDER)
+        .thenComparing(LessonKey::getSubject)
+        .thenComparing(LessonKey::getTeacher, String.CASE_INSENSITIVE_ORDER)
+        .thenComparing(LessonKey::getTeacher);
 
     @Column(name = "subject", nullable = false)
     private String subject;
@@ -39,15 +39,15 @@ public class LessonColorKey implements Serializable, Comparable<LessonColorKey>
     /**
      * Trims both parts; a null teacher means the whole subject.
      */
-    public LessonColorKey(String subject, String teacher)
+    public LessonKey(String subject, String teacher)
     {
         this.subject = subject == null ? "" : subject.trim();
         this.teacher = teacher == null ? "" : teacher.trim();
     }
 
-    public static LessonColorKey of(String subject)
+    public static LessonKey of(String subject)
     {
-        return new LessonColorKey(subject, null);
+        return new LessonKey(subject, null);
     }
 
     public boolean isWholeSubject()
@@ -56,7 +56,7 @@ public class LessonColorKey implements Serializable, Comparable<LessonColorKey>
     }
 
     @Override
-    public int compareTo(LessonColorKey other)
+    public int compareTo(LessonKey other)
     {
         return ORDER.compare(this, other);
     }

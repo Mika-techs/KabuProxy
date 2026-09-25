@@ -6,4 +6,5 @@
     <include file="liquibase/changelogs/001_initial_schema.xml"/>
     <include file="liquibase/changelogs/002_user_settings.xml"/>
     <include file="liquibase/changelogs/003_lesson_colors.xml"/>
+    <include file="liquibase/changelogs/004_lesson_names.xml"/>
 </databaseChangeLog>

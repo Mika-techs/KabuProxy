@@ -132,6 +132,17 @@
             field.value = '';
             refreshLessonColors();
         });
+        // an empty teacher name shows the subject's name: keep the teacher rows' placeholders in step
+        if (!row.dataset.teacher) {
+            var name = row.querySelector('.lesson-name');
+            name.addEventListener('input', function () {
+                lessonRows.forEach(function (r) {
+                    if (r.dataset.teacher && r.dataset.subject === row.dataset.subject) {
+                        r.querySelector('.lesson-name').placeholder = name.value.trim() || row.dataset.subject;
+                    }
+                });
+            });
+        }
     });
 
     // ---- mark the lesson running right now ----

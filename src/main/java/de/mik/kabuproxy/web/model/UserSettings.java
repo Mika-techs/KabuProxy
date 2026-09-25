@@ -1,6 +1,6 @@
 package de.mik.kabuproxy.web.model;
 
-import de.mik.kabuproxy.persistence.entities.LessonColorKey;
+import de.mik.kabuproxy.persistence.entities.LessonKey;
 import de.mik.kabuproxy.persistence.entities.ThemeMode;
 
 import java.util.Collections;
@@ -12,18 +12,24 @@ import java.util.regex.Pattern;
 /**
  * A user's UI preferences. {@code accentColor} is either null (built-in accent) or a normalized {@code #rrggbb};
  * {@code colors} maps {@link ThemeColor} keys to normalized colours and only holds the ones that differ from the built-ins;
- * {@code lessonColors} maps a subject, or a subject taught by one teacher, to a normalized colour (see {@link #lessonColor}).
+ * {@code lessonColors} maps a subject, or a subject taught by one teacher, to a normalized colour (see {@link #lessonColor});
+ * {@code lessonNames} maps the same keys to the name shown instead of the subject (see {@link #lessonName}).
  */
-public record UserSettings(ThemeMode themeMode, String accentColor, Map<String, String> colors, Map<LessonColorKey, String> lessonColors)
+public record UserSettings(ThemeMode themeMode, String accentColor, Map<String, String> colors, Map<LessonKey, String> lessonColors,
+                           Map<LessonKey, String> lessonNames)
 {
-    public static final UserSettings DEFAULT = new UserSettings(ThemeMode.SYSTEM, null, Map.of(), Map.of());
+    public static final UserSettings DEFAULT = new UserSettings(ThemeMode.SYSTEM, null, Map.of(), Map.of(), Map.of());
     public static final String DEFAULT_ACCENT = "#4f46e5";
 
     /**
      * Length of {@code lesson.subject}/{@code lesson.teacher} and the matching {@code user_lesson_color} columns.
      */
     private static final int MAX_KEY_LENGTH = 100;
-    private static final int MAX_LESSON_COLORS = 200;
+    /**
+     * Length of {@code user_lesson_name.display_name}.
+     */
+    private static final int MAX_NAME_LENGTH = 100;
+    private static final int MAX_LESSON_ENTRIES = 200;
     private static final Pattern HEX_COLOR = Pattern.compile("#[0-9a-f]{6}");
 
     public UserSettings
@@ -32,6 +38,7 @@ public record UserSettings(ThemeMode themeMode, String accentColor, Map<String, 
         accentColor = normalizeColor(accentColor);
         colors = sanitize(colors);
         lessonColors = sanitizeLessonColors(lessonColors);
+        lessonNames = sanitizeLessonNames(lessonNames);
     }
 
     /**
@@ -72,27 +79,57 @@ public record UserSettings(ThemeMode themeMode, String accentColor, Map<String, 
      * Keeps valid colours of non-blank subjects (keys are trimmed, as stored in {@code lesson}); bounded because the keys
      * come from a form.
      */
-    private static Map<LessonColorKey, String> sanitizeLessonColors(Map<LessonColorKey, String> lessonColors)
+    private static Map<LessonKey, String> sanitizeLessonColors(Map<LessonKey, String> lessonColors)
     {
-        Map<LessonColorKey, String> clean = new TreeMap<>();
+        Map<LessonKey, String> clean = new TreeMap<>();
         if (lessonColors != null)
         {
             lessonColors.forEach((key, value) ->
             {
                 String color = normalizeColor(value);
-                if (key != null && !key.getSubject().isEmpty() && key.getSubject().length() <= MAX_KEY_LENGTH
-                    && key.getTeacher().length() <= MAX_KEY_LENGTH && color != null && clean.size() < MAX_LESSON_COLORS)
+                if (validKey(key) && color != null && clean.size() < MAX_LESSON_ENTRIES)
                 {
-                    clean.put(new LessonColorKey(key.getSubject(), key.getTeacher()), color);
+                    clean.put(new LessonKey(key.getSubject(), key.getTeacher()), color);
                 }
             });
         }
         return Collections.unmodifiableMap(clean);
     }
 
+    /**
+     * Keeps trimmed, non-blank names of non-blank subjects; a subject's name equal to the subject itself is dropped (it
+     * changes nothing). Bounded like the colours; the names are only ever rendered as escaped text.
+     */
+    private static Map<LessonKey, String> sanitizeLessonNames(Map<LessonKey, String> lessonNames)
+    {
+        Map<LessonKey, String> clean = new TreeMap<>();
+        if (lessonNames != null)
+        {
+            lessonNames.forEach((key, value) ->
+            {
+                String name = value == null ? "" : value.strip();
+                if (validKey(key) && !name.isEmpty() && name.length() <= MAX_NAME_LENGTH && clean.size() < MAX_LESSON_ENTRIES)
+                {
+                    LessonKey trimmed = new LessonKey(key.getSubject(), key.getTeacher());
+                    if (!trimmed.isWholeSubject() || !name.equals(trimmed.getSubject()))
+                    {
+                        clean.put(trimmed, name);
+                    }
+                }
+            });
+        }
+        return Collections.unmodifiableMap(clean);
+    }
+
+    private static boolean validKey(LessonKey key)
+    {
+        return key != null && !key.getSubject().isEmpty() && key.getSubject().length() <= MAX_KEY_LENGTH
+            && key.getTeacher().length() <= MAX_KEY_LENGTH;
+    }
+
     public UserSettings withThemeMode(ThemeMode mode)
     {
-        return new UserSettings(mode, accentColor, colors, lessonColors);
+        return new UserSettings(mode, accentColor, colors, lessonColors, lessonNames);
     }
 
     /**
@@ -135,8 +172,21 @@ public record UserSettings(ThemeMode themeMode, String accentColor, Map<String, 
         {
             return null;
         }
-        String color = teacher == null || teacher.isBlank() ? null : lessonColors.get(new LessonColorKey(subject, teacher));
-        return color != null ? color : lessonColors.get(LessonColorKey.of(subject));
+        String color = teacher == null || teacher.isBlank() ? null : lessonColors.get(new LessonKey(subject, teacher));
+        return color != null ? color : lessonColors.get(LessonKey.of(subject));
+    }
+
+    /**
+     * Name shown for a lesson: the user's one for this subject and teacher, else the subject's, else the subject itself.
+     */
+    public String lessonName(String subject, String teacher)
+    {
+        if (subject == null)
+        {
+            return null;
+        }
+        String name = teacher == null || teacher.isBlank() ? null : lessonNames.get(new LessonKey(subject, teacher));
+        return name != null ? name : lessonNames.getOrDefault(LessonKey.of(subject), subject);
     }
 
     /**

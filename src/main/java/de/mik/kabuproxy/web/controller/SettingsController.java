@@ -1,6 +1,6 @@
 package de.mik.kabuproxy.web.controller;
 
-import de.mik.kabuproxy.persistence.entities.LessonColorKey;
+import de.mik.kabuproxy.persistence.entities.LessonKey;
 import de.mik.kabuproxy.persistence.entities.ThemeMode;
 import de.mik.kabuproxy.security.UserSession;
 import de.mik.kabuproxy.service.AccountService;
@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -60,9 +61,9 @@ public class SettingsController implements Serializable
      */
     @Getter private final Map<String, String> colors = new HashMap<>();
     /**
-     * One row per subject, followed by one per teacher when the subject has several (or a teacher colour is stored).
+     * One row per subject, followed by one per teacher when the subject has several (or a teacher colour/name is stored).
      */
-    @Getter private List<LessonColorRow> lessonRows = List.of();
+    @Getter private List<LessonRow> lessonRows = List.of();
 
     @PostConstruct
     void init()
@@ -73,9 +74,10 @@ public class SettingsController implements Serializable
         fillColors(settings);
         lessonRows = buildLessonRows(settings);
         fillLessonColors(settings);
+        fillLessonNames(settings);
     }
 
-    private List<LessonColorRow> buildLessonRows(UserSettings settings)
+    private List<LessonRow> buildLessonRows(UserSettings settings)
     {
         Map<String, TreeSet<String>> teachers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         accountService.findByUser(userSession.getUserId())
@@ -83,7 +85,9 @@ public class SettingsController implements Serializable
             .ifPresent(account -> queryService.subjectTeachers(account.classId())
                 .forEach((subject, names) -> teachers.put(subject, teacherSet(names))));
         Map<String, TreeSet<String>> storedTeachers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        for (LessonColorKey key : settings.lessonColors().keySet())
+        Set<LessonKey> storedKeys = new TreeSet<>(settings.lessonColors().keySet());
+        storedKeys.addAll(settings.lessonNames().keySet());
+        for (LessonKey key : storedKeys)
         {
             teachers.computeIfAbsent(key.getSubject(), k -> teacherSet(List.of()));
             if (!key.isWholeSubject())
@@ -91,17 +95,17 @@ public class SettingsController implements Serializable
                 storedTeachers.computeIfAbsent(key.getSubject(), k -> teacherSet(List.of())).add(key.getTeacher());
             }
         }
-        List<LessonColorRow> rows = new ArrayList<>();
+        List<LessonRow> rows = new ArrayList<>();
         teachers.forEach((subject, names) ->
         {
-            rows.add(new LessonColorRow(subject, ""));
+            rows.add(new LessonRow(subject, ""));
             TreeSet<String> stored = storedTeachers.getOrDefault(subject, teacherSet(List.of()));
-            // a single teacher needs no own row - unless a colour for them is still stored
+            // a single teacher needs no own row - unless a colour or name for them is still stored
             if (names.size() > 1 || !stored.isEmpty())
             {
                 TreeSet<String> all = teacherSet(names);
                 all.addAll(stored);
-                all.forEach(teacher -> rows.add(new LessonColorRow(subject, teacher)));
+                all.forEach(teacher -> rows.add(new LessonRow(subject, teacher)));
             }
         });
         return List.copyOf(rows);
@@ -119,10 +123,34 @@ public class SettingsController implements Serializable
         lessonRows.forEach(row -> row.setColor(settings.lessonColors().getOrDefault(row.key(), "")));
     }
 
+    private void fillLessonNames(UserSettings settings)
+    {
+        lessonRows.forEach(row -> row.setName(settings.lessonNames().getOrDefault(row.key(), "")));
+    }
+
+    /**
+     * Placeholder of a row's name field, i.e. what the timetable shows while it is empty: the subject, for a teacher row
+     * the subject row's name if it has one.
+     */
+    public String namePlaceholder(LessonRow row)
+    {
+        if (!row.isTeacherRow())
+        {
+            return row.getSubject();
+        }
+        return lessonRows.stream()
+            .filter(r -> !r.isTeacherRow() && r.getSubject().equals(row.getSubject()))
+            .findFirst()
+            .map(LessonRow::getName)
+            .map(String::strip)
+            .filter(name -> !name.isEmpty())
+            .orElse(row.getSubject());
+    }
+
     /**
      * Colour a row shows: its own, for a teacher row else the subject's; null follows the accent.
      */
-    private String effectiveColor(LessonColorRow row)
+    private String effectiveColor(LessonRow row)
     {
         String own = UserSettings.normalizeColor(row.getColor());
         if (own != null || !row.isTeacherRow())
@@ -139,12 +167,12 @@ public class SettingsController implements Serializable
     /**
      * Preview style of a row in the lesson colour table, same property as on the timetable.
      */
-    public String lessonStyle(LessonColorRow row)
+    public String lessonStyle(LessonRow row)
     {
         return UserSettings.lessonColorStyle(effectiveColor(row));
     }
 
-    public String lessonPickerColor(LessonColorRow row)
+    public String lessonPickerColor(LessonRow row)
     {
         String color = effectiveColor(row);
         return color == null ? getPickerColor() : color;
@@ -201,14 +229,20 @@ public class SettingsController implements Serializable
         {
             color = null;
         }
-        Map<LessonColorKey, String> lessonColors = new HashMap<>();
-        lessonRows.forEach(row -> lessonColors.put(row.key(), row.getColor()));
-        UserSettings settings = new UserSettings(mode, color, colors, lessonColors);
+        Map<LessonKey, String> lessonColors = new HashMap<>();
+        Map<LessonKey, String> lessonNames = new HashMap<>();
+        lessonRows.forEach(row ->
+        {
+            lessonColors.put(row.key(), row.getColor());
+            lessonNames.put(row.key(), row.getName());
+        });
+        UserSettings settings = new UserSettings(mode, color, colors, lessonColors, lessonNames);
         settingsService.save(userSession.getUserId(), settings);
         themeMode = mode.name();
         accentColor = color;
         fillColors(settings);
         fillLessonColors(settings);
+        fillLessonNames(settings);
         Messages.info("settings.saved");
     }
 
@@ -218,15 +252,17 @@ public class SettingsController implements Serializable
         themeMode = ThemeMode.SYSTEM.name();
         fillColors(UserSettings.DEFAULT);
         fillLessonColors(UserSettings.DEFAULT);
+        fillLessonNames(UserSettings.DEFAULT);
         save();
     }
 
     /**
-     * A row of the lesson colour table; {@code color} is the hidden field: {@code #rrggbb}, or empty to follow the
-     * subject's colour (teacher row) or the accent (subject row). A class, not a record: JSF writes {@code color} back.
+     * A row of the lesson table; {@code color} is the hidden field: {@code #rrggbb}, or empty to follow the subject's
+     * colour (teacher row) or the accent (subject row); {@code name} is shown instead of the subject, empty follows the
+     * subject's name (teacher row) or the subject itself. A class, not a record: JSF writes both back.
      */
     @Getter
-    public static class LessonColorRow implements Serializable
+    public static class LessonRow implements Serializable
     {
         private static final long serialVersionUID = 1L;
 
@@ -236,8 +272,9 @@ public class SettingsController implements Serializable
          */
         private final String teacher;
         @Setter private String color = "";
+        @Setter private String name = "";
 
-        LessonColorRow(String subject, String teacher)
+        LessonRow(String subject, String teacher)
         {
             this.subject = subject;
             this.teacher = teacher;
@@ -248,9 +285,9 @@ public class SettingsController implements Serializable
             return !teacher.isEmpty();
         }
 
-        LessonColorKey key()
+        LessonKey key()
         {
-            return new LessonColorKey(subject, teacher);
+            return new LessonKey(subject, teacher);
         }
     }
 

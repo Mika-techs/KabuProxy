@@ -53,7 +53,15 @@ public class UserSettingsEntity
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_lesson_color", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "color", nullable = false)
-    private Map<LessonColorKey, String> lessonColors = new HashMap<>();
+    private Map<LessonKey, String> lessonColors = new HashMap<>();
+
+    /**
+     * Subject (+ teacher) → name shown instead of the subject; lazy, so loading the settings doesn't join three maps.
+     */
+    @ElementCollection
+    @CollectionTable(name = "user_lesson_name", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "display_name", nullable = false)
+    private Map<LessonKey, String> lessonNames = new HashMap<>();
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;

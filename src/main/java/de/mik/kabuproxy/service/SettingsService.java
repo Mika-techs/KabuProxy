@@ -21,7 +21,7 @@ public class SettingsService
     public UserSettings load(long userId)
     {
         return settingsRepository.findByUserId(userId)
-            .map(s -> new UserSettings(s.getThemeMode(), s.getAccentColor(), s.getColors(), s.getLessonColors()))
+            .map(s -> new UserSettings(s.getThemeMode(), s.getAccentColor(), s.getColors(), s.getLessonColors(), s.getLessonNames()))
             .orElse(UserSettings.DEFAULT);
     }
 
@@ -41,6 +41,8 @@ public class SettingsService
         entity.getColors().putAll(settings.colors());
         entity.getLessonColors().clear();
         entity.getLessonColors().putAll(settings.lessonColors());
+        entity.getLessonNames().clear();
+        entity.getLessonNames().putAll(settings.lessonNames());
         entity.setUpdatedAt(Instant.now());
         if (created)
         {

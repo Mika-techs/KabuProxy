@@ -448,6 +448,7 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
 .demo--changed { position: relative; overflow: hidden; padding-left: 13px; --lesson-bar: var(--changed-border); background: var(--changed-soft); color: var(--changed); }
 .demo--lesson { position: relative; overflow: hidden; padding-left: 13px; background: var(--surface-2); max-width: 100%; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
 .lesson-colors td:first-child { max-width: 0; width: 100%; }
+.lesson-colors .lesson-name { width: 9rem; max-width: 36vw; }
 .lesson-colors__teacher td { border-top-style: dashed; }
 .lesson-colors__teacher td:first-child { padding-left: 22px; }
 .lesson-colors__teacher .demo--lesson { font-weight: 550; }

@@ -124,7 +124,7 @@
                 <h:panelGroup rendered="#{not empty settingsController.lessonRows}">
                     <table class="colors lesson-colors">
                         <thead>
-                            <tr><th scope="col">#{msg['settings.subjectColumn']}</th><th scope="col">#{msg['settings.colorColumn']}</th><th scope="col"><span class="skip">#{msg['settings.reset']}</span></th></tr>
+                            <tr><th scope="col">#{msg['settings.subjectColumn']}</th><th scope="col">#{msg['settings.nameColumn']}</th><th scope="col">#{msg['settings.colorColumn']}</th><th scope="col"><span class="skip">#{msg['settings.reset']}</span></th></tr>
                         </thead>
                         <tbody>
                             <ui:repeat value="#{settingsController.lessonRows}" var="r">
@@ -133,6 +133,11 @@
                                         <span class="demo demo--lesson" style="#{settingsController.lessonStyle(r)}">
                                             #{r.teacherRow ? r.teacher : r.subject}<ui:fragment rendered="#{r.teacherRow}"> <span class="muted">· #{r.subject}</span></ui:fragment>
                                         </span>
+                                    </td>
+                                    <td>
+                                        <!-- empty = the subject's name (teacher row) / the subject itself -->
+                                        <p:inputText value="#{r.name}" maxlength="100" placeholder="#{settingsController.namePlaceholder(r)}" styleClass="lesson-name"
+                                                     a:aria-label="#{r.teacherRow ? i18n.format('settings.teacherNameLabel', r.subject, r.teacher) : i18n.format('settings.lessonNameLabel', r.subject)}"/>
                                     </td>
                                     <td>
                                         <!-- the picker has no name: the hidden field is what gets saved, empty = subject colour / accent -->

@@ -17,6 +17,8 @@ Hibernate 7 · Liquibase · MySQL 8 · log4j2 · Lombok · Jsoup.
   surfaces, text, change/cancel/new/holiday markers) separately for light and dark
 - Own lesson colours per subject, optionally per teacher for subjects with several (side bar in the timetable; teacher →
   subject → accent colour, lightened in dark mode)
+- Own display names per subject or subject + teacher, e.g. "AEuP" taught by RAH → "Web" (one digikabu subject that is
+  really several)
 - Changes (Änderung, new/cancelled lessons) highlighted, plus "N changes since your last visit"
 - History: digikabu only shows ±1 week, kabuProxy keeps every week it has seen
 - Exams and holidays as a clean list; block-schedule "kein Unterricht" weeks merged into ranges

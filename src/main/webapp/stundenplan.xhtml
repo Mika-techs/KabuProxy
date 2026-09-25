@@ -99,7 +99,7 @@
                         </ui:fragment>
                         <ui:repeat value="#{d.lessons}" var="l">
                             <article class="#{l.cssClass} #{l.singlePeriod ? 'lesson--short' : ''}" style="#{l.gridStyle};#{theme.settings.lessonStyle(l.subject, l.teacher)}" data-time="#{l.timeLabel}">
-                                <div class="lesson__subject">#{l.subject}</div>
+                                <div class="lesson__subject" title="#{l.subject}">#{theme.settings.lessonName(l.subject, l.teacher)}</div>
                                 <div class="lesson__meta">
                                     <span>#{l.teacher}</span>
                                     <span class="lesson__room">#{l.room}</span>
@@ -130,7 +130,7 @@
                                 <li class="#{l.cssClass}" style="#{theme.settings.lessonStyle(l.subject, l.teacher)}" data-time="#{l.timeLabel}">
                                     <span class="row__period">#{l.periodLabel}</span>
                                     <span class="row__time">#{l.timeLabel}</span>
-                                    <span class="row__subject">#{l.subject}</span>
+                                    <span class="row__subject" title="#{l.subject}">#{theme.settings.lessonName(l.subject, l.teacher)}</span>
                                     <span class="row__meta">#{l.teacher} · #{l.room}</span>
                                     <ui:fragment rendered="#{l.changed}">
                                         <span class="row__note">#{empty l.note ? (empty l.hint ? msg['timetable.changed'] : l.hint) : l.note}</span>
