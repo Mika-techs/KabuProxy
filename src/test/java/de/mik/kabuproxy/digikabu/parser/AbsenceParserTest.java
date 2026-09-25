@@ -8,6 +8,7 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AbsenceParserTest
 {
@@ -25,8 +26,33 @@ class AbsenceParserTest
     }
 
     @Test
+    void acceptsMissingDetailsWhenThereAreNoAbsences() throws Exception
+    {
+        ParsedAbsences absences = AbsenceParser.parse(Fixtures.load("absences_none.html"));
+
+        assertEquals(0, absences.fullDays());
+        assertEquals(0, absences.hours());
+        assertTrue(absences.entries().isEmpty());
+    }
+
+    @Test
+    void rejectsMissingDetailsWhenAbsencesAreCounted()
+    {
+        assertThrows(DigikabuException.ParseFailed.class, () -> AbsenceParser.parse(withoutDetails("1")));
+    }
+
+    @Test
     void rejectsPageWithoutSummary()
     {
         assertThrows(DigikabuException.ParseFailed.class, () -> AbsenceParser.parse("<html><body><table class='table-striped'></table></body></html>"));
+    }
+
+    private static String withoutDetails(String fullDays) throws Exception
+    {
+        String html = Fixtures.load("absences.html")
+            .replace("bold\">1</span> (davon 1 unentschuldigt)", "bold\">" + fullDays + "</span>");
+        int start = html.indexOf("<h3>Details</h3>");
+        int end = html.indexOf("</table>", start) + "</table>".length();
+        return html.substring(0, start) + html.substring(end);
     }
 }

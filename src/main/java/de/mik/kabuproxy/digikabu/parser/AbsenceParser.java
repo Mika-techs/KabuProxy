@@ -15,7 +15,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Parses {@code GET /Fehlzeiten}: a summary ("Ganztags: 1 (davon 1 unentschuldigt)") and a details table.
+ * Parses {@code GET /Fehlzeiten}: a summary ("Ganztags: 1 (davon 1 unentschuldigt)") and a details table (missing
+ * when there are no absences).
  */
 public final class AbsenceParser
 {
@@ -61,6 +62,11 @@ public final class AbsenceParser
         }
 
         Element details = doc.selectFirst("table.table-striped");
+        if (details == null && fullDays[0] == 0 && hours[0] == 0)
+        {
+            // digikabu leaves out the details table when there is nothing to list
+            return new ParsedAbsences(0, 0, 0, 0, List.of());
+        }
         if (details == null)
         {
             throw new DigikabuException.ParseFailed("absence details table missing", null, html);
