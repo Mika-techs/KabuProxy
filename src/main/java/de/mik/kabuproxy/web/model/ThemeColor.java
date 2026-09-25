@@ -1,5 +1,7 @@
 package de.mik.kabuproxy.web.model;
 
+import de.mik.kabuproxy.web.I18n;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -9,33 +11,31 @@ import java.util.Objects;
  */
 public enum ThemeColor
 {
-    BG("bg", "Hintergrund", "#f5f6fa", "#0f1117"),
-    SURFACE("surface", "Flächen (Karten, Leisten)", "#ffffff", "#171a23"),
-    TEXT("text", "Text", "#1d2130", "#e6e8ef"),
-    CHANGED("changed", "Änderungen & Vertretungen", "#b45309", "#fbbf5c"),
-    CANCEL("cancel", "Entfall & Prüfungen", "#c0262d", "#ff7b7b"),
-    OK("ok", "Neu hinzugefügt", "#15803d", "#5ad083"),
-    HOLIDAY("holiday", "Ferien", "#1d6fb8", "#7cc0ff");
+    BG("bg", "#f5f6fa", "#0f1117"),
+    SURFACE("surface", "#ffffff", "#171a23"),
+    TEXT("text", "#1d2130", "#e6e8ef"),
+    CHANGED("changed", "#b45309", "#fbbf5c"),
+    CANCEL("cancel", "#c0262d", "#ff7b7b"),
+    OK("ok", "#15803d", "#5ad083"),
+    HOLIDAY("holiday", "#1d6fb8", "#7cc0ff");
 
     private static final String LIGHT = "light-";
     private static final String DARK = "dark-";
 
     private final String token;
-    private final String label;
     private final String lightDefault;
     private final String darkDefault;
 
-    ThemeColor(String token, String label, String lightDefault, String darkDefault)
+    ThemeColor(String token, String lightDefault, String darkDefault)
     {
         this.token = token;
-        this.label = label;
         this.lightDefault = lightDefault;
         this.darkDefault = darkDefault;
     }
 
     public String getLabel()
     {
-        return label;
+        return I18n.text("themeColor." + token);
     }
 
     /**

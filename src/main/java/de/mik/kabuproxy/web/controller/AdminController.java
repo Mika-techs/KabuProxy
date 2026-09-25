@@ -63,11 +63,11 @@ public class AdminController implements Serializable
     {
         if (selectedUserId == null)
         {
-            Messages.error("Kein Benutzer ausgewählt.");
+            Messages.error("admin.noSelection");
             return;
         }
         logger.info("admin links digikabu credentials for user {}", selectedUserId);
-        if (Messages.linkResult(credentialService.linkByAdmin(selectedUserId, digikabuUsername, digikabuPassword), "Erster Abruf läuft."))
+        if (Messages.linkResult(credentialService.linkByAdmin(selectedUserId, digikabuUsername, digikabuPassword), "admin.firstCrawl"))
         {
             digikabuPassword = null;
             reload();
@@ -89,7 +89,7 @@ public class AdminController implements Serializable
     {
         if (user.userId() == userSession.getUserId())
         {
-            Messages.warn("Du kannst dich nicht selbst sperren.");
+            Messages.warn("admin.selfDisable");
             return;
         }
         accountService.setUserStatus(user.userId(), UserStatus.DISABLED);
@@ -100,11 +100,11 @@ public class AdminController implements Serializable
     {
         if (user.userId() == userSession.getUserId())
         {
-            Messages.warn("Du kannst dich nicht selbst löschen.");
+            Messages.warn("admin.selfDelete");
             return;
         }
         accountService.deleteUser(user.userId());
-        Messages.info("Benutzer " + user.username() + " und alle Daten gelöscht.");
+        Messages.info("admin.deleted", user.username());
         reload();
     }
 
@@ -113,7 +113,7 @@ public class AdminController implements Serializable
         if (user.account() != null)
         {
             crawlService.submit(user.account().accountId());
-            Messages.info("Abruf für " + user.username() + " gestartet.");
+            Messages.info("admin.crawlStarted", user.username());
         }
     }
 

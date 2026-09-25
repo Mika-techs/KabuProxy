@@ -1,6 +1,7 @@
 package de.mik.kabuproxy.web.model;
 
 import de.mik.kabuproxy.persistence.entities.DayKind;
+import de.mik.kabuproxy.web.I18n;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -48,8 +49,8 @@ public record DayView(LocalDate date, boolean today, List<LessonView> lessons, D
         }
         if (kind == DayKind.NO_SCHOOL)
         {
-            return "Kein Unterricht";
+            return I18n.text("day.noSchool");
         }
-        return "Kein Unterricht eingetragen";
+        return I18n.text("day.noLessons");
     }
 }

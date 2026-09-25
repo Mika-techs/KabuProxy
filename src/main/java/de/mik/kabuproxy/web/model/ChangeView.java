@@ -1,6 +1,7 @@
 package de.mik.kabuproxy.web.model;
 
 import de.mik.kabuproxy.persistence.entities.ChangeType;
+import de.mik.kabuproxy.web.I18n;
 
 import java.util.Locale;
 
@@ -8,12 +9,7 @@ public record ChangeView(String dayLabel, String periodLabel, ChangeType type, S
 {
     public String typeLabel()
     {
-        return switch (type)
-        {
-            case ADDED -> "neu";
-            case REMOVED -> "entfällt";
-            case MODIFIED -> "geändert";
-        };
+        return I18n.text("change." + type.name());
     }
 
     public String cssClass()

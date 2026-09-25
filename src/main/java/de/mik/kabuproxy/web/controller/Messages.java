@@ -1,6 +1,7 @@
 package de.mik.kabuproxy.web.controller;
 
 import de.mik.kabuproxy.service.CredentialService.LinkResult;
+import de.mik.kabuproxy.web.I18n;
 
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -11,38 +12,41 @@ final class Messages
     {
     }
 
-    static void info(String text)
+    /**
+     * @param key text in the {@link I18n} bundle
+     */
+    static void info(String key, Object... args)
     {
-        add(FacesMessage.SEVERITY_INFO, text);
+        add(FacesMessage.SEVERITY_INFO, I18n.text(key, args));
     }
 
-    static void warn(String text)
+    static void warn(String key, Object... args)
     {
-        add(FacesMessage.SEVERITY_WARN, text);
+        add(FacesMessage.SEVERITY_WARN, I18n.text(key, args));
     }
 
-    static void error(String text)
+    static void error(String key, Object... args)
     {
-        add(FacesMessage.SEVERITY_ERROR, text);
+        add(FacesMessage.SEVERITY_ERROR, I18n.text(key, args));
     }
 
     /**
      * Reports the outcome of linking digikabu credentials.
      *
-     * @param savedHint appended to the success message
+     * @param savedHintKey bundle key of the text appended to the success message
      * @return true when the credentials were saved
      */
-    static boolean linkResult(LinkResult result, String savedHint)
+    static boolean linkResult(LinkResult result, String savedHintKey)
     {
         switch (result.outcome())
         {
-            case SAVED -> info("Gespeichert: " + result.header().displayName() + " (" + result.header().className() + "). " + savedHint);
-            case INCOMPLETE -> error("Benutzername und Passwort angeben.");
-            case NOT_CONFIGURED -> error("Zugangsdaten können gerade nicht gespeichert werden (KABU_CRED_KEY fehlt).");
-            case RATE_LIMITED -> error("Zu viele Versuche – bitte in ein paar Minuten erneut probieren.");
-            case REJECTED -> error("digikabu hat die Zugangsdaten abgelehnt – nichts gespeichert.");
-            case FAILED -> error("Test-Login fehlgeschlagen: " + result.error());
-            default -> error("Unbekannter Zustand.");
+            case SAVED -> info("creds.saved", result.header().displayName(), result.header().className(), I18n.text(savedHintKey));
+            case INCOMPLETE -> error("creds.incomplete");
+            case NOT_CONFIGURED -> error("creds.notConfigured");
+            case RATE_LIMITED -> error("creds.rateLimited");
+            case REJECTED -> error("creds.rejected");
+            case FAILED -> error("creds.failed", result.error());
+            default -> error("unknownState");
         }
         return result.outcome() == LinkResult.Outcome.SAVED;
     }

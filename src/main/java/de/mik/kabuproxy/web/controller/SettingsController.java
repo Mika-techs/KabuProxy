@@ -3,6 +3,7 @@ package de.mik.kabuproxy.web.controller;
 import de.mik.kabuproxy.persistence.entities.ThemeMode;
 import de.mik.kabuproxy.security.UserSession;
 import de.mik.kabuproxy.service.SettingsService;
+import de.mik.kabuproxy.web.I18n;
 import de.mik.kabuproxy.web.model.ThemeColor;
 import de.mik.kabuproxy.web.model.UserSettings;
 import lombok.Getter;
@@ -30,15 +31,15 @@ public class SettingsController implements Serializable
      * Preset accents; all readable on the light and (lightened) on the dark background.
      */
     private static final List<AccentPreset> PRESETS = List.of(
-        new AccentPreset("Indigo", UserSettings.DEFAULT_ACCENT),
-        new AccentPreset("Blau", "#2563eb"),
-        new AccentPreset("Petrol", "#0e7490"),
-        new AccentPreset("Grün", "#15803d"),
-        new AccentPreset("Orange", "#c2410c"),
-        new AccentPreset("Rot", "#b91c1c"),
-        new AccentPreset("Pink", "#be185d"),
-        new AccentPreset("Violett", "#7c3aed"),
-        new AccentPreset("Schiefer", "#475569"));
+        new AccentPreset("indigo", UserSettings.DEFAULT_ACCENT),
+        new AccentPreset("blue", "#2563eb"),
+        new AccentPreset("petrol", "#0e7490"),
+        new AccentPreset("green", "#15803d"),
+        new AccentPreset("orange", "#c2410c"),
+        new AccentPreset("red", "#b91c1c"),
+        new AccentPreset("pink", "#be185d"),
+        new AccentPreset("violet", "#7c3aed"),
+        new AccentPreset("slate", "#475569"));
 
     @Inject private transient SettingsService settingsService;
     @Inject private UserSession userSession;
@@ -101,7 +102,7 @@ public class SettingsController implements Serializable
             color = UserSettings.normalizeColor(accentColor);
             if (color == null)
             {
-                Messages.error("Ungültige Farbe – bitte im Format #rrggbb angeben.");
+                Messages.error("settings.invalidColor");
                 return;
             }
         }
@@ -115,7 +116,7 @@ public class SettingsController implements Serializable
         themeMode = mode.name();
         accentColor = color;
         fillColors(settings);
-        Messages.info("Einstellungen gespeichert.");
+        Messages.info("settings.saved");
     }
 
     public void reset()
@@ -126,7 +127,14 @@ public class SettingsController implements Serializable
         save();
     }
 
-    public record AccentPreset(String label, String color)
+    /**
+     * @param name key suffix of the label in the {@link I18n} bundle
+     */
+    public record AccentPreset(String name, String color)
     {
+        public String label()
+        {
+            return I18n.text("accent." + name);
+        }
     }
 }

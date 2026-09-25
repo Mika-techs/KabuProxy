@@ -4,9 +4,15 @@
               xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_1.xsd"
               version="4.1">
     <application>
+        <!-- the view locale is picked from the browser's Accept-Language, German otherwise -->
         <locale-config>
             <default-locale>de</default-locale>
             <supported-locale>de</supported-locale>
+            <supported-locale>en</supported-locale>
         </locale-config>
+        <resource-bundle>
+            <base-name>i18n.messages</base-name>
+            <var>msg</var>
+        </resource-bundle>
     </application>
 </faces-config>

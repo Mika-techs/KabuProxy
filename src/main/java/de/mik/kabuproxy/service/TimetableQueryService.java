@@ -9,6 +9,7 @@ import de.mik.kabuproxy.persistence.entities.PeriodSlotEntity;
 import de.mik.kabuproxy.persistence.repository.CalendarRepository;
 import de.mik.kabuproxy.persistence.repository.LessonRepository;
 import de.mik.kabuproxy.persistence.repository.SchoolClassRepository;
+import de.mik.kabuproxy.web.I18n;
 import de.mik.kabuproxy.web.model.CalendarEntryView;
 import de.mik.kabuproxy.web.model.ChangeView;
 import de.mik.kabuproxy.web.model.DayView;
@@ -24,13 +25,11 @@ import jakarta.transaction.Transactional;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.format.TextStyle;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -123,8 +122,8 @@ public class TimetableQueryService
         for (LessonChangeEntity change : lessonRepository.findChanges(classId, since, today))
         {
             String period = change.getPeriodFrom() == change.getPeriodTo()
-                ? change.getPeriodFrom() + ". Std"
-                : change.getPeriodFrom() + ".–" + change.getPeriodTo() + ". Std";
+                ? I18n.text("timetable.period", change.getPeriodFrom())
+                : I18n.text("timetable.periods", change.getPeriodFrom(), change.getPeriodTo());
             PeriodSlotEntity slot = slots.get(change.getPeriodFrom());
             if (slot != null)
             {
@@ -184,7 +183,7 @@ public class TimetableQueryService
         Map<String, List<CalendarEntryView>> byMonth = new LinkedHashMap<>();
         for (CalendarEntryView entry : entries)
         {
-            String title = entry.from().getMonth().getDisplayName(TextStyle.FULL, Locale.GERMANY) + " " + entry.from().getYear();
+            String title = Formats.monthYear(entry.from());
             byMonth.computeIfAbsent(title, k -> new ArrayList<>()).add(entry);
         }
         return byMonth.entrySet().stream().map(e -> new MonthView(e.getKey(), e.getValue())).toList();
@@ -211,7 +210,7 @@ public class TimetableQueryService
         String text = start.getText();
         if (text == null && start.getKind() == DayKind.NO_SCHOOL)
         {
-            text = "Kein Unterricht";
+            text = I18n.text("day.noSchool");
         }
         return new CalendarEntryView(start.getDate(), end.getDate(), start.getKind(), text, end.getDate().isBefore(today), containsToday);
     }

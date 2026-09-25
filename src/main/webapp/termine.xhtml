@@ -3,14 +3,14 @@
                 xmlns:ui="jakarta.faces.facelets"
                 template="/WEB-INF/templates/layout.xhtml">
     <ui:param name="page" value="termine"/>
-    <ui:define name="title">Termine</ui:define>
+    <ui:define name="title">#{msg['calendar.title']}</ui:define>
 
     <ui:define name="content">
         <div class="toolbar">
-            <h1 class="toolbar__title">Termine &amp; Schulaufgaben</h1>
+            <h1 class="toolbar__title">#{msg['calendar.heading']}</h1>
             <div class="weeknav">
-                <h:outputLink value="termine.xhtml" styleClass="btn #{calendarController.showPast ? '' : 'btn--active'}">Ab heute</h:outputLink>
-                <h:outputLink value="termine.xhtml?past=1" styleClass="btn #{calendarController.showPast ? 'btn--active' : ''}">Ganzes Jahr</h:outputLink>
+                <h:outputLink value="termine.xhtml" styleClass="btn #{calendarController.showPast ? '' : 'btn--active'}">#{msg['calendar.fromToday']}</h:outputLink>
+                <h:outputLink value="termine.xhtml?past=1" styleClass="btn #{calendarController.showPast ? 'btn--active' : ''}">#{msg['calendar.wholeYear']}</h:outputLink>
             </div>
         </div>
 
@@ -26,7 +26,7 @@
         </ui:fragment>
 
         <ui:fragment rendered="#{empty calendarController.months}">
-            <section class="empty"><p>Noch keine Termine geladen.</p></section>
+            <section class="empty"><p>#{msg['calendar.empty']}</p></section>
         </ui:fragment>
 
         <ui:repeat value="#{calendarController.months}" var="m">

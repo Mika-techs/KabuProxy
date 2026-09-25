@@ -28,6 +28,9 @@ mvn test               # unit tests only (no containers)
 - MIK's IntelliJ is a Flatpak: no docker CLI, no `flatpak-spawn --host`. IDE tooling must use Maven or IntelliJ's
   Docker plugin (socket `unix:///run/user/1000/docker.sock`, rootless) – see `.run/`. Keep the Dockerfile free of
   BuildKit-only syntax (`COPY --chmod`, `RUN --mount`), the plugin may use the legacy builder.
+- i18n: JSF picks de/en from `Accept-Language` (faces-config); texts in `i18n/messages.properties` (German root) +
+  `messages_en.properties`, views `#{msg['key']}`, with args `#{i18n.format(...)}`, Java `I18n.text(key, args)`.
+  Keep the empty `messages_de.properties` – without it a `de` lookup falls back to the JVM locale (en) in JSF.
 - `DotEnvConfigSource` reads `./.env` (ordinal 250 < env vars 300) so IDE runs need no env vars.
 
 ## Code style

@@ -6,83 +6,81 @@
                 template="/WEB-INF/templates/layout.xhtml">
     <ui:param name="page" value="admin"/>
     <ui:param name="stateful" value="true"/>
-    <ui:define name="title">Admin</ui:define>
+    <ui:define name="title">#{msg['admin.title']}</ui:define>
 
     <ui:define name="content">
-        <h1 class="toolbar__title">Benutzer</h1>
+        <h1 class="toolbar__title">#{msg['admin.users']}</h1>
 
         <h:panelGroup layout="block" styleClass="banner banner--error" rendered="#{not adminController.cipherReady}">
-            <strong>KABU_CRED_KEY fehlt oder ist ungültig.</strong> Ohne ihn können keine Zugangsdaten gespeichert werden.
-            Erzeugen mit <code>openssl rand -base64 32</code>.
+            <strong>#{msg['admin.noKey']}</strong> #{msg['admin.noKeyText']} <code>openssl rand -base64 32</code>.
         </h:panelGroup>
 
         <h:form id="users">
             <p:growl id="growl" showDetail="false" life="6000"/>
 
-            <p:dataTable id="table" value="#{adminController.users}" var="u" styleClass="admin-table" emptyMessage="Noch niemand angemeldet."
+            <p:dataTable id="table" value="#{adminController.users}" var="u" styleClass="admin-table" emptyMessage="#{msg['admin.empty']}"
                          rowStyleClass="#{u.status eq 'PENDING' ? 'row--pending' : ''}" reflow="true">
-                <p:column headerText="Benutzer">
+                <p:column headerText="#{msg['admin.user']}">
                     <div class="strong">#{u.username}</div>
                     <div class="muted small">#{u.email}</div>
                 </p:column>
-                <p:column headerText="Status">
-                    <p:tag value="#{u.status eq 'PENDING' ? 'wartet' : (u.status eq 'ACTIVE' ? 'aktiv' : 'gesperrt')}"
+                <p:column headerText="#{msg['admin.status']}">
+                    <p:tag value="#{msg['userStatus.'+= u.status]}"
                            severity="#{u.status eq 'PENDING' ? 'warning' : (u.status eq 'ACTIVE' ? 'success' : 'danger')}"/>
-                    <div class="muted small">zuletzt #{u.lastLoginLabel}</div>
+                    <div class="muted small">#{msg['admin.lastLogin']} #{u.lastLoginLabel}</div>
                 </p:column>
-                <p:column headerText="digikabu">
+                <p:column headerText="#{msg['admin.digikabu']}">
                     <ui:fragment rendered="#{u.hasAccount}">
                         <div>#{u.account.displayName} <span class="muted">(#{u.account.className})</span></div>
                         <div class="small">
                             <span class="dot dot--#{u.account.crawlStatus}"></span>#{u.account.statusLabel}
-                            · Erfolg: #{u.account.lastSuccessLabel}
+                            · #{msg['admin.lastSuccess']} #{u.account.lastSuccessLabel}
                         </div>
                         <h:panelGroup styleClass="small text-bad" rendered="#{not empty u.account.lastError}">#{u.account.lastError}</h:panelGroup>
                     </ui:fragment>
-                    <h:outputText rendered="#{not u.hasAccount}" value="nicht verknüpft" styleClass="muted"/>
+                    <h:outputText rendered="#{not u.hasAccount}" value="#{msg['admin.notLinked']}" styleClass="muted"/>
                 </p:column>
-                <p:column headerText="Aktionen" styleClass="admin-actions">
-                    <p:commandButton value="#{u.hasAccount ? 'Zugang ändern' : 'Verknüpfen'}" icon="pi pi-link"
+                <p:column headerText="#{msg['admin.actions']}" styleClass="admin-actions">
+                    <p:commandButton value="#{u.hasAccount ? msg['creds.change'] : msg['admin.link']}" icon="pi pi-link"
                                      action="#{adminController.select(u)}" update=":creds" oncomplete="PF('credsDialog').show()"
                                      styleClass="ui-button-sm" disabled="#{not adminController.cipherReady}"/>
-                    <p:commandButton value="Abrufen" icon="pi pi-refresh" rendered="#{u.hasAccount}" action="#{adminController.crawlNow(u)}"
+                    <p:commandButton value="#{msg['admin.crawl']}" icon="pi pi-refresh" rendered="#{u.hasAccount}" action="#{adminController.crawlNow(u)}"
                                      update="growl" styleClass="ui-button-sm ui-button-outlined"/>
-                    <p:commandButton value="Aktivieren" icon="pi pi-check" rendered="#{u.status ne 'ACTIVE'}" action="#{adminController.activate(u)}"
+                    <p:commandButton value="#{msg['admin.activate']}" icon="pi pi-check" rendered="#{u.status ne 'ACTIVE'}" action="#{adminController.activate(u)}"
                                      update="@form" styleClass="ui-button-sm ui-button-outlined ui-button-success"/>
-                    <p:commandButton value="Sperren" icon="pi pi-ban" rendered="#{u.status ne 'DISABLED'}" action="#{adminController.disable(u)}"
+                    <p:commandButton value="#{msg['admin.disable']}" icon="pi pi-ban" rendered="#{u.status ne 'DISABLED'}" action="#{adminController.disable(u)}"
                                      update="@form" styleClass="ui-button-sm ui-button-outlined ui-button-warning"/>
-                    <p:commandButton value="Löschen" icon="pi pi-trash" action="#{adminController.delete(u)}" update="@form"
+                    <p:commandButton value="#{msg['admin.delete']}" icon="pi pi-trash" action="#{adminController.delete(u)}" update="@form"
                                      styleClass="ui-button-sm ui-button-outlined ui-button-danger">
-                        <p:confirm header="Benutzer löschen" message="#{u.username} inkl. digikabu-Zugang und aller Daten löschen?" icon="pi pi-exclamation-triangle"/>
+                        <p:confirm header="#{msg['admin.deleteHeader']}" message="#{i18n.format('admin.deleteConfirm', u.username)}" icon="pi pi-exclamation-triangle"/>
                     </p:commandButton>
                 </p:column>
             </p:dataTable>
 
-            <p:commandButton value="Aktualisieren" icon="pi pi-sync" action="#{adminController.reload}" update="@form"
+            <p:commandButton value="#{msg['admin.reload']}" icon="pi pi-sync" action="#{adminController.reload}" update="@form"
                              styleClass="ui-button-outlined admin-reload"/>
 
             <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true">
-                <p:commandButton value="Ja, löschen" type="button" styleClass="ui-confirmdialog-yes ui-button-danger"/>
-                <p:commandButton value="Abbrechen" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
+                <p:commandButton value="#{msg['admin.deleteYes']}" type="button" styleClass="ui-confirmdialog-yes ui-button-danger"/>
+                <p:commandButton value="#{msg['admin.cancel']}" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
             </p:confirmDialog>
         </h:form>
 
-        <p:dialog header="digikabu-Zugang" widgetVar="credsDialog" modal="true" responsive="true" width="420" resizable="false">
+        <p:dialog header="#{msg['admin.credsDialog']}" widgetVar="credsDialog" modal="true" responsive="true" width="420" resizable="false">
             <h:form id="creds">
-                <p class="muted small">Für <b>#{adminController.selectedUserLabel}</b>. Die Daten werden vor dem Speichern mit einem echten Login
-                    geprüft und verschlüsselt abgelegt.</p>
+                <p class="muted small">#{msg['admin.credsFor']} <b>#{adminController.selectedUserLabel}</b>. #{msg['admin.credsText']}</p>
                 <div class="field">
-                    <p:outputLabel for="dkuser" value="digikabu-Benutzername"/>
+                    <p:outputLabel for="dkuser" value="#{msg['creds.username']}"/>
                     <p:inputText id="dkuser" value="#{adminController.digikabuUsername}" required="true" autocomplete="off" styleClass="w-full"/>
                 </div>
                 <div class="field">
-                    <p:outputLabel for="dkpass" value="digikabu-Passwort"/>
+                    <p:outputLabel for="dkpass" value="#{msg['creds.password']}"/>
                     <p:password id="dkpass" value="#{adminController.digikabuPassword}" required="true" toggleMask="true" feedback="false"
                                 autocomplete="new-password" styleClass="w-full" inputStyleClass="w-full"/>
                 </div>
                 <p:messages id="credsMsgs"/>
                 <div class="dialog-actions">
-                    <p:commandButton value="Prüfen &amp; speichern" icon="pi pi-save" action="#{adminController.saveCredentials}"
+                    <p:commandButton value="#{msg['admin.credsSave']}" icon="pi pi-save" action="#{adminController.saveCredentials}"
                                      update="credsMsgs :users:table"
                                      oncomplete="if (args &amp;&amp; !args.validationFailed &amp;&amp; !document.querySelector('#creds .ui-message-error, #creds .ui-messages-error')) PF('credsDialog').hide()"/>
                 </div>

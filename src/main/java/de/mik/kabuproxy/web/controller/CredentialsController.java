@@ -58,7 +58,7 @@ public class CredentialsController implements Serializable
     public void save()
     {
         boolean active = userService.isActive(userSession.getUserId());
-        String hint = active ? "Der Abruf läuft – gleich sind deine Daten da." : "Sobald ein Admin dich freischaltet, werden deine Daten geladen.";
+        String hint = active ? "creds.hintActive" : "creds.hintPending";
         if (Messages.linkResult(credentialService.linkOwn(userSession.getUserId(), digikabuUsername, digikabuPassword), hint))
         {
             reload();

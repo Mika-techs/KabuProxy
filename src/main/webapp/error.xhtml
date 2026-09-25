@@ -2,11 +2,11 @@
                 xmlns:ui="jakarta.faces.facelets"
                 template="/WEB-INF/templates/layout.xhtml">
     <ui:param name="page" value="error"/>
-    <ui:define name="title">Fehler</ui:define>
+    <ui:define name="title">#{msg['error.title']}</ui:define>
     <ui:define name="content">
         <section class="empty">
-            <h1>#{requestScope['jakarta.servlet.error.status_code'] eq 403 ? 'Kein Zugriff' : (requestScope['jakarta.servlet.error.status_code'] eq 404 ? 'Nicht gefunden' : 'Da ist was schiefgelaufen')}</h1>
-            <p><a class="btn" href="#{request.contextPath}/stundenplan.xhtml">Zum Stundenplan</a></p>
+            <h1>#{requestScope['jakarta.servlet.error.status_code'] eq 403 ? msg['error.forbidden'] : (requestScope['jakarta.servlet.error.status_code'] eq 404 ? msg['error.notFound'] : msg['error.other'])}</h1>
+            <p><a class="btn" href="#{request.contextPath}/stundenplan.xhtml">#{msg['error.back']}</a></p>
         </section>
     </ui:define>
 </ui:composition>

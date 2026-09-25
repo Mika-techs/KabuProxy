@@ -1,6 +1,7 @@
 package de.mik.kabuproxy.web.model;
 
 import de.mik.kabuproxy.persistence.entities.CrawlStatus;
+import de.mik.kabuproxy.web.I18n;
 
 import java.time.Instant;
 
@@ -24,14 +25,7 @@ public record AccountView(
 {
     public String statusLabel()
     {
-        return switch (crawlStatus)
-        {
-            case NEVER -> "noch nicht abgerufen";
-            case OK -> "ok";
-            case AUTH_FAILED -> "Login abgelehnt";
-            case UNAVAILABLE -> "digikabu nicht erreichbar";
-            case PARSE_ERROR -> "Seite nicht lesbar";
-        };
+        return I18n.text("crawl." + crawlStatus.name());
     }
 
     public String lastSuccessLabel()

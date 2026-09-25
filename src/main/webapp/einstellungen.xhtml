@@ -6,39 +6,38 @@
                 template="/WEB-INF/templates/layout.xhtml">
     <ui:param name="page" value="einstellungen"/>
     <ui:param name="stateful" value="true"/>
-    <ui:define name="title">Einstellungen</ui:define>
+    <ui:define name="title">#{msg['settings.title']}</ui:define>
 
     <ui:define name="content">
-        <h1 class="toolbar__title">Einstellungen</h1>
-        <p class="muted">Gilt für dein Konto – auf allen Geräten.</p>
+        <h1 class="toolbar__title">#{msg['settings.title']}</h1>
+        <p class="muted">#{msg['settings.intro']}</p>
 
         <h:form id="creds" styleClass="settings settings--first">
             <section class="settings__section">
-                <h2>digikabu-Zugang</h2>
-                <p class="muted small">Deine Zugangsdaten werden vor dem Speichern mit einem echten Login geprüft und verschlüsselt abgelegt. Niemand –
-                    auch kein Admin – kann dein Passwort einsehen.</p>
+                <h2>#{msg['settings.credsHeading']}</h2>
+                <p class="muted small">#{msg['settings.credsText']}</p>
                 <h:panelGroup layout="block" styleClass="small creds__current" rendered="#{credentialsController.hasAccount}">
-                    Verknüpft: <b>#{credentialsController.account.displayName}</b>
+                    #{msg['settings.credsLinked']} <b>#{credentialsController.account.displayName}</b>
                     <span class="muted">(#{credentialsController.account.className})</span>
                     · <span class="dot dot--#{credentialsController.account.crawlStatus}"></span>#{credentialsController.account.statusLabel}
                 </h:panelGroup>
                 <h:panelGroup layout="block" styleClass="banner banner--warn" rendered="#{not credentialsController.ready}">
-                    Zugangsdaten können gerade nicht gespeichert werden – bitte einem Admin Bescheid geben.
+                    #{msg['settings.credsNotReady']}
                 </h:panelGroup>
                 <div class="field">
-                    <p:outputLabel for="dkuser" value="digikabu-Benutzername"/>
-                    <p:inputText id="dkuser" value="#{credentialsController.digikabuUsername}" required="true" requiredMessage="Benutzername fehlt."
+                    <p:outputLabel for="dkuser" value="#{msg['creds.username']}"/>
+                    <p:inputText id="dkuser" value="#{credentialsController.digikabuUsername}" required="true" requiredMessage="#{msg['settings.usernameMissing']}"
                                  autocomplete="username" styleClass="w-full"/>
                     <p:message for="dkuser"/>
                 </div>
                 <div class="field">
-                    <p:outputLabel for="dkpass" value="digikabu-Passwort"/>
-                    <p:password id="dkpass" value="#{credentialsController.digikabuPassword}" required="true" requiredMessage="Passwort fehlt."
+                    <p:outputLabel for="dkpass" value="#{msg['creds.password']}"/>
+                    <p:password id="dkpass" value="#{credentialsController.digikabuPassword}" required="true" requiredMessage="#{msg['settings.passwordMissing']}"
                                 toggleMask="true" feedback="false" autocomplete="current-password" styleClass="w-full" inputStyleClass="w-full"/>
                     <p:message for="dkpass"/>
                 </div>
                 <div class="settings__actions">
-                    <h:commandButton value="#{credentialsController.hasAccount ? 'Prüfen &amp; ändern' : 'Prüfen &amp; verknüpfen'}"
+                    <h:commandButton value="#{credentialsController.hasAccount ? msg['settings.credsChange'] : msg['settings.credsLink']}"
                                      action="#{credentialsController.save}" styleClass="btn btn--active" disabled="#{not credentialsController.ready}"/>
                 </div>
             </section>
@@ -46,45 +45,44 @@
 
         <h:form id="settings" styleClass="settings">
             <section class="settings__section">
-                <h2>Darstellung</h2>
-                <p class="muted small">„System“ folgt der Einstellung deines Geräts.</p>
-                <div class="segmented" role="radiogroup" aria-label="Darstellung">
-                    <button type="button" class="segmented__opt" role="radio" data-value="SYSTEM">System</button>
-                    <button type="button" class="segmented__opt" role="radio" data-value="LIGHT">Hell</button>
-                    <button type="button" class="segmented__opt" role="radio" data-value="DARK">Dunkel</button>
+                <h2>#{msg['settings.appearance']}</h2>
+                <p class="muted small">#{msg['settings.appearanceHint']}</p>
+                <div class="segmented" role="radiogroup" aria-label="#{msg['settings.appearance']}">
+                    <button type="button" class="segmented__opt" role="radio" data-value="SYSTEM">#{msg['settings.modeSystem']}</button>
+                    <button type="button" class="segmented__opt" role="radio" data-value="LIGHT">#{msg['settings.modeLight']}</button>
+                    <button type="button" class="segmented__opt" role="radio" data-value="DARK">#{msg['settings.modeDark']}</button>
                 </div>
                 <h:inputHidden id="mode" value="#{settingsController.themeMode}"/>
             </section>
 
             <section class="settings__section">
-                <h2>Akzentfarbe</h2>
-                <p class="muted small">Für Links, Buttons, die aktuelle Stunde und den Countdown. Im Dunkelmodus wird sie automatisch aufgehellt.</p>
-                <div class="swatches" role="radiogroup" aria-label="Akzentfarbe">
+                <h2>#{msg['settings.accent']}</h2>
+                <p class="muted small">#{msg['settings.accentHint']}</p>
+                <div class="swatches" role="radiogroup" aria-label="#{msg['settings.accent']}">
                     <ui:repeat value="#{settingsController.presets}" var="p">
                         <button type="button" class="swatch" role="radio" data-color="#{p.color}" style="--swatch: #{p.color}" title="#{p.label}"
                                 aria-label="#{p.label}"></button>
                     </ui:repeat>
-                    <label class="swatch swatch--custom" role="radio" title="Eigene Farbe" aria-label="Eigene Farbe">
+                    <label class="swatch swatch--custom" role="radio" title="#{msg['settings.accentCustom']}" aria-label="#{msg['settings.accentCustom']}">
                         <input type="color" id="accent-picker" value="#{settingsController.pickerColor}"/>
                     </label>
                 </div>
                 <h:inputHidden id="accent" value="#{settingsController.accentColor}"/>
 
                 <div class="preview" aria-hidden="true">
-                    <span class="btn btn--active btn--small">Button</span>
-                    <span class="nav__link is-active">Stundenplan</span>
-                    <span class="chip chip--accent">Klasse</span>
-                    <a href="#" tabindex="-1">Link</a>
+                    <span class="btn btn--active btn--small">#{msg['settings.previewButton']}</span>
+                    <span class="nav__link is-active">#{msg['nav.timetable']}</span>
+                    <span class="chip chip--accent">#{msg['settings.previewClass']}</span>
+                    <a href="#" tabindex="-1">#{msg['settings.previewLink']}</a>
                 </div>
             </section>
 
             <section class="settings__section">
-                <h2>Farben</h2>
-                <p class="muted small">Getrennt für hell und dunkel. Rahmen, gedämpfter Text und die hellen Hintergründe der Markierungen werden daraus
-                    abgeleitet. Die Vorschau zeigt den gerade aktiven Modus – zum Prüfen oben unter „Darstellung“ umschalten.</p>
+                <h2>#{msg['settings.colors']}</h2>
+                <p class="muted small">#{msg['settings.colorsHint']}</p>
                 <table class="colors">
                     <thead>
-                        <tr><th scope="col">Farbe</th><th scope="col">Hell</th><th scope="col">Dunkel</th><th scope="col"><span class="skip">Zurücksetzen</span></th></tr>
+                        <tr><th scope="col">#{msg['settings.colorColumn']}</th><th scope="col">#{msg['settings.modeLight']}</th><th scope="col">#{msg['settings.modeDark']}</th><th scope="col"><span class="skip">#{msg['settings.reset']}</span></th></tr>
                     </thead>
                     <tbody>
                         <ui:repeat value="#{settingsController.themeColors}" var="c">
@@ -92,14 +90,14 @@
                                 <td>#{c.label}</td>
                                 <td>
                                     <h:inputText value="#{settingsController.colors[c.lightKey]}" a:type="color" a:data-var="#{c.lightKey}"
-                                                 a:data-default="#{c.lightDefault}" a:aria-label="#{c.label} (hell)"/>
+                                                 a:data-default="#{c.lightDefault}" a:aria-label="#{c.label} (#{msg['settings.colorLight']})"/>
                                 </td>
                                 <td>
                                     <h:inputText value="#{settingsController.colors[c.darkKey]}" a:type="color" a:data-var="#{c.darkKey}"
-                                                 a:data-default="#{c.darkDefault}" a:aria-label="#{c.label} (dunkel)"/>
+                                                 a:data-default="#{c.darkDefault}" a:aria-label="#{c.label} (#{msg['settings.colorDark']})"/>
                                 </td>
                                 <td>
-                                    <button type="button" class="icon-btn color-reset" title="Standard" aria-label="#{c.label} zurücksetzen">
+                                    <button type="button" class="icon-btn color-reset" title="#{msg['settings.colorDefault']}" aria-label="#{i18n.format('settings.colorReset', c.label)}">
                                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4"/></svg>
                                     </button>
                                 </td>
@@ -109,17 +107,17 @@
                 </table>
 
                 <div class="preview" aria-hidden="true">
-                    <span class="demo demo--changed">Vertretung</span>
-                    <span class="demo demo--cancel">Entfall</span>
-                    <span class="demo demo--ok">Neu</span>
-                    <span class="demo demo--holiday">Ferien</span>
-                    <span class="demo demo--muted">gedämpft</span>
+                    <span class="demo demo--changed">#{msg['settings.demoChanged']}</span>
+                    <span class="demo demo--cancel">#{msg['settings.demoCancel']}</span>
+                    <span class="demo demo--ok">#{msg['settings.demoOk']}</span>
+                    <span class="demo demo--holiday">#{msg['settings.demoHoliday']}</span>
+                    <span class="demo demo--muted">#{msg['settings.demoMuted']}</span>
                 </div>
             </section>
 
             <div class="settings__actions">
-                <h:commandButton value="Speichern" action="#{settingsController.save}" styleClass="btn btn--active"/>
-                <h:commandButton value="Zurücksetzen" action="#{settingsController.reset}" styleClass="btn btn--ghost"/>
+                <h:commandButton value="#{msg['settings.save']}" action="#{settingsController.save}" styleClass="btn btn--active"/>
+                <h:commandButton value="#{msg['settings.reset']}" action="#{settingsController.reset}" styleClass="btn btn--ghost"/>
             </div>
         </h:form>
     </ui:define>

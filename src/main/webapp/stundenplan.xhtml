@@ -4,13 +4,13 @@
                 xmlns:ui="jakarta.faces.facelets"
                 template="/WEB-INF/templates/layout.xhtml">
     <ui:param name="page" value="stundenplan"/>
-    <ui:define name="title">Stundenplan</ui:define>
+    <ui:define name="title">#{msg['timetable.title']}</ui:define>
 
     <ui:define name="content">
         <ui:fragment rendered="#{not status.hasClass}">
             <section class="empty">
-                <h1>Noch keine Daten</h1>
-                <p>Für dein Konto ist noch kein digikabu-Zugang hinterlegt oder der erste Abruf läuft gerade.</p>
+                <h1>#{msg['timetable.noData']}</h1>
+                <p>#{msg['timetable.noDataText']}</p>
             </section>
         </ui:fragment>
 
@@ -18,12 +18,12 @@
 
             <div class="toolbar">
                 <h1 class="toolbar__title">
-                    Woche <span class="muted">#{timetableController.week.label}</span>
+                    #{msg['timetable.week']} <span class="muted">#{timetableController.week.label}</span>
                 </h1>
-                <div class="weeknav" role="group" aria-label="Woche wechseln">
-                    <a class="btn btn--icon" href="?week=#{timetableController.week.previous}" title="Vorherige Woche" aria-label="Vorherige Woche">‹</a>
-                    <h:outputLink value="stundenplan.xhtml" styleClass="btn #{timetableController.currentWeek ? 'btn--active' : ''}">Diese Woche</h:outputLink>
-                    <a class="btn btn--icon" href="?week=#{timetableController.week.next}" title="Nächste Woche" aria-label="Nächste Woche">›</a>
+                <div class="weeknav" role="group" aria-label="#{msg['timetable.weekNav']}">
+                    <a class="btn btn--icon" href="?week=#{timetableController.week.previous}" title="#{msg['timetable.previous']}" aria-label="#{msg['timetable.previous']}">‹</a>
+                    <h:outputLink value="stundenplan.xhtml" styleClass="btn #{timetableController.currentWeek ? 'btn--active' : ''}">#{msg['timetable.thisWeek']}</h:outputLink>
+                    <a class="btn btn--icon" href="?week=#{timetableController.week.next}" title="#{msg['timetable.next']}" aria-label="#{msg['timetable.next']}">›</a>
                 </div>
             </div>
 
@@ -31,11 +31,11 @@
             <ui:fragment rendered="#{timetableController.currentWeek}">
                 <div class="nextup" id="nextup" role="status" hidden="hidden">
                     <div class="nextup__row" id="nextup-end" hidden="hidden">
-                        <span class="nextup__label">Stunde endet in</span>
+                        <span class="nextup__label">#{msg['timetable.endsIn']}</span>
                         <span class="nextup__timer" id="nextup-end-timer"></span>
                     </div>
                     <div class="nextup__row" id="nextup-next" hidden="hidden">
-                        <span class="nextup__label">Nächste Stunde in</span>
+                        <span class="nextup__label">#{msg['timetable.nextIn']}</span>
                         <span class="nextup__timer" id="nextup-timer"></span>
                         <span class="nextup__what" id="nextup-what"></span>
                     </div>
@@ -44,11 +44,11 @@
 
             <!-- changes since last visit -->
             <ui:fragment rendered="#{not empty timetableController.changes}">
-                <section class="changes" aria-label="Änderungen">
+                <section class="changes" aria-label="#{msg['timetable.changes']}">
                     <div class="changes__head">
-                        <h2>#{timetableController.changes.size()} Änderung#{timetableController.changes.size() == 1 ? '' : 'en'} seit deinem letzten Besuch</h2>
+                        <h2>#{timetableController.changes.size() == 1 ? msg['timetable.changesOne'] : i18n.format('timetable.changesMany', timetableController.changes.size())}</h2>
                         <h:form>
-                            <h:commandButton value="Gesehen" action="#{timetableController.markSeen}" styleClass="btn btn--small"/>
+                            <h:commandButton value="#{msg['timetable.seen']}" action="#{timetableController.markSeen}" styleClass="btn btn--small"/>
                         </h:form>
                     </div>
                     <ul class="changes__list">
@@ -69,8 +69,7 @@
 
             <ui:fragment rendered="#{not timetableController.week.hasLessons}">
                 <section class="empty empty--inline">
-                    <p>Für diese Woche liegen keine Stunden vor. digikabu zeigt nur die aktuelle Woche ±1 – ältere Wochen gibt es hier nur,
-                        wenn kabuProxy sie damals schon abgerufen hat.</p>
+                    <p>#{msg['timetable.noLessons']}</p>
                 </section>
             </ui:fragment>
 
@@ -106,7 +105,7 @@
                                     <span class="lesson__room">#{l.room}</span>
                                 </div>
                                 <ui:fragment rendered="#{l.changed}">
-                                    <div class="lesson__note">#{empty l.note ? (empty l.hint ? 'Änderung' : l.hint) : l.note}</div>
+                                    <div class="lesson__note">#{empty l.note ? (empty l.hint ? msg['timetable.changed'] : l.hint) : l.note}</div>
                                 </ui:fragment>
                             </article>
                         </ui:repeat>
@@ -121,7 +120,7 @@
                         <h2 class="daycard__head">
                             <span>#{d.weekdayLong}</span>
                             <span class="muted">#{d.dateLabel}</span>
-                            <ui:fragment rendered="#{d.today}"><span class="chip chip--accent">heute</span></ui:fragment>
+                            <ui:fragment rendered="#{d.today}"><span class="chip chip--accent">#{msg['timetable.today']}</span></ui:fragment>
                         </h2>
                         <ui:fragment rendered="#{d.free}">
                             <p class="daycard__free">#{d.freeLabel}</p>
@@ -134,7 +133,7 @@
                                     <span class="row__subject">#{l.subject}</span>
                                     <span class="row__meta">#{l.teacher} · #{l.room}</span>
                                     <ui:fragment rendered="#{l.changed}">
-                                        <span class="row__note">#{empty l.note ? (empty l.hint ? 'Änderung' : l.hint) : l.note}</span>
+                                        <span class="row__note">#{empty l.note ? (empty l.hint ? msg['timetable.changed'] : l.hint) : l.note}</span>
                                     </ui:fragment>
                                 </li>
                             </ui:repeat>

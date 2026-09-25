@@ -5,6 +5,7 @@ import de.mik.kabuproxy.crawler.CrawlService;
 import de.mik.kabuproxy.persistence.entities.CrawlStatus;
 import de.mik.kabuproxy.security.UserSession;
 import de.mik.kabuproxy.service.AccountService;
+import de.mik.kabuproxy.web.I18n;
 import de.mik.kabuproxy.web.model.AccountView;
 import de.mik.kabuproxy.web.model.Formats;
 
@@ -81,7 +82,7 @@ public class StatusController
         {
             return null;
         }
-        return "Stand " + Formats.relative(account.timetableUpdatedAt() != null ? account.timetableUpdatedAt() : account.lastSuccessAt());
+        return I18n.text("layout.freshness", Formats.relative(account.timetableUpdatedAt() != null ? account.timetableUpdatedAt() : account.lastSuccessAt()));
     }
 
     /**
@@ -93,25 +94,18 @@ public class StatusController
         {
             return null;
         }
-        return switch (account.crawlStatus())
-        {
-            case NEVER -> "Daten werden gerade zum ersten Mal von digikabu geholt …";
-            case AUTH_FAILED -> "digikabu hat dein Passwort abgelehnt. Der Abruf ist pausiert, bis du es unter Einstellungen aktualisierst.";
-            case UNAVAILABLE -> "digikabu ist gerade nicht erreichbar – angezeigt werden die zuletzt geladenen Daten.";
-            case PARSE_ERROR -> "digikabu hat etwas Unerwartetes geliefert – angezeigt werden die zuletzt geladenen Daten.";
-            case OK -> null;
-        };
+        return I18n.text("problem." + account.crawlStatus().name());
     }
 
     public String refresh()
     {
         switch (crawlService.requestRefresh(userSession.getUserId()))
         {
-            case STARTED -> Messages.info("Aktualisierung gestartet – lade die Seite in ein paar Sekunden neu.");
-            case COOLDOWN -> Messages.warn("Gerade erst aktualisiert. Nächster Versuch in ein paar Minuten möglich.");
-            case BUSY -> Messages.info("Es läuft bereits ein Abruf – gleich sind neue Daten da.");
-            case NO_ACCOUNT -> Messages.warn("Kein digikabu-Konto verknüpft.");
-            default -> Messages.warn("Unbekannter Zustand.");
+            case STARTED -> Messages.info("refresh.started");
+            case COOLDOWN -> Messages.warn("refresh.cooldown");
+            case BUSY -> Messages.info("refresh.busy");
+            case NO_ACCOUNT -> Messages.warn("refresh.noAccount");
+            default -> Messages.warn("unknownState");
         }
         return null;
     }

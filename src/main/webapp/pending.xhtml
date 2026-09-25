@@ -3,22 +3,22 @@
                 xmlns:ui="jakarta.faces.facelets"
                 template="/WEB-INF/templates/layout.xhtml">
     <ui:param name="page" value="pending"/>
-    <ui:define name="title">Warten auf Freischaltung</ui:define>
+    <ui:define name="title">#{msg['pending.title']}</ui:define>
     <ui:define name="content">
         <section class="empty">
-            <h1>Fast geschafft 👋</h1>
-            <p>Du bist angemeldet, dein Zugang muss aber noch von einem Admin freigeschaltet werden.</p>
+            <h1>#{msg['pending.heading']}</h1>
+            <p>#{msg['pending.text']}</p>
             <ui:fragment rendered="#{not status.hasAccount and userSession.pending}">
-                <p>Du kannst dein digikabu-Konto schon jetzt verknüpfen – dann sind deine Daten nach der Freischaltung sofort da.</p>
+                <p>#{msg['pending.linkNow']}</p>
             </ui:fragment>
             <ui:fragment rendered="#{status.hasAccount}">
-                <p>Dein digikabu-Konto (#{status.account.displayName}, #{status.account.className}) ist verknüpft.</p>
+                <p>#{i18n.format('pending.linked', status.account.displayName, status.account.className)}</p>
             </ui:fragment>
-            <p class="muted">Angemeldet als <b>#{userSession.username}</b>. Wenn du gesperrt wurdest, bleibt diese Seite ebenfalls stehen.</p>
+            <p class="muted">#{msg['pending.loggedInAs']} <b>#{userSession.username}</b>. #{msg['pending.disabledHint']}</p>
             <p>
-                <a class="btn" href="#{request.contextPath}/stundenplan.xhtml">Erneut prüfen</a>
+                <a class="btn" href="#{request.contextPath}/stundenplan.xhtml">#{msg['pending.recheck']}</a>
                 <h:outputLink rendered="#{userSession.pending}" styleClass="btn btn--active" value="#{request.contextPath}/einstellungen.xhtml">
-                    #{status.hasAccount ? 'Zugang ändern' : 'digikabu verknüpfen'}
+                    #{status.hasAccount ? msg['creds.change'] : msg['pending.link']}
                 </h:outputLink>
             </p>
         </section>
