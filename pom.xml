@@ -7,6 +7,14 @@
     <version>0.1.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
+    <licenses>
+        <license>
+            <name>GPL-3.0-or-later WITH additional permission for Liquibase (see NOTICE)</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <properties>
         <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
