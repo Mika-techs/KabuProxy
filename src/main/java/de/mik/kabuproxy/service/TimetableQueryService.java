@@ -164,14 +164,16 @@ public class TimetableQueryService
     }
 
     /**
-     * Calendar grouped by month; holiday / no-school stretches are merged into ranges, plain school days without text
-     * are left out.
+     * Calendar grouped by month; consecutive school days are merged into "school" ranges (days with text are listed
+     * on their own as well), holidays and named no-school stretches into ranges, plain no-school days are left out.
      */
     @Transactional
     public List<MonthView> loadCalendar(long classId, LocalDate from, LocalDate to)
     {
         LocalDate today = LocalDate.now(KabuConfig.ZONE);
         List<CalendarEntryView> entries = new ArrayList<>();
+        CalendarDayEntity blockStart = null;
+        CalendarDayEntity blockEnd = null;
         CalendarDayEntity rangeStart = null;
         CalendarDayEntity rangeEnd = null;
         for (CalendarDayEntity day : calendarRepository.findBetween(classId, from, to))
@@ -181,8 +183,35 @@ public class TimetableQueryService
             {
                 continue;
             }
-            boolean mergeable = day.getKind() != DayKind.SCHOOL;
-            if (rangeStart != null && mergeable && day.getKind() == rangeStart.getKind() && Objects.equals(day.getText(), rangeStart.getText())
+            if (day.getKind() == DayKind.SCHOOL)
+            {
+                if (rangeStart != null)
+                {
+                    entries.add(entry(rangeStart, rangeEnd, today, false));
+                    rangeStart = null;
+                }
+                if (blockStart != null && !day.getDate().equals(nextSchoolDay(blockEnd.getDate())))
+                {
+                    entries.add(entry(blockStart, blockEnd, today, true));
+                    blockStart = null;
+                }
+                if (blockStart == null)
+                {
+                    blockStart = day;
+                }
+                blockEnd = day;
+                if (day.getText() != null)
+                {
+                    entries.add(entry(day, day, today, false));
+                }
+                continue;
+            }
+            if (blockStart != null)
+            {
+                entries.add(entry(blockStart, blockEnd, today, true));
+                blockStart = null;
+            }
+            if (rangeStart != null && day.getKind() == rangeStart.getKind() && Objects.equals(day.getText(), rangeStart.getText())
                 && day.getDate().equals(nextSchoolDay(rangeEnd.getDate())))
             {
                 rangeEnd = day;
@@ -190,23 +219,26 @@ public class TimetableQueryService
             }
             if (rangeStart != null)
             {
-                entries.add(entry(rangeStart, rangeEnd, today));
+                entries.add(entry(rangeStart, rangeEnd, today, false));
                 rangeStart = null;
             }
-            if (mergeable)
+            // a plain no-school day is just the gap between two school ranges
+            if (day.getKind() == DayKind.HOLIDAY || day.getText() != null)
             {
                 rangeStart = day;
                 rangeEnd = day;
             }
-            else if (day.getText() != null)
-            {
-                entries.add(entry(day, day, today));
-            }
+        }
+        if (blockStart != null)
+        {
+            entries.add(entry(blockStart, blockEnd, today, true));
         }
         if (rangeStart != null)
         {
-            entries.add(entry(rangeStart, rangeEnd, today));
+            entries.add(entry(rangeStart, rangeEnd, today, false));
         }
+        // a school range is added when it ends - move it in front of the days listed within it
+        entries.sort(Comparator.comparing(CalendarEntryView::from).thenComparing(e -> !e.schoolRange()));
 
         Map<String, List<CalendarEntryView>> byMonth = new LinkedHashMap<>();
         for (CalendarEntryView entry : entries)
@@ -232,15 +264,11 @@ public class TimetableQueryService
         return next;
     }
 
-    private static CalendarEntryView entry(CalendarDayEntity start, CalendarDayEntity end, LocalDate today)
+    private static CalendarEntryView entry(CalendarDayEntity start, CalendarDayEntity end, LocalDate today, boolean schoolRange)
     {
         boolean containsToday = !today.isBefore(start.getDate()) && !today.isAfter(end.getDate());
-        String text = start.getText();
-        if (text == null && start.getKind() == DayKind.NO_SCHOOL)
-        {
-            text = I18n.text("day.noSchool");
-        }
-        return new CalendarEntryView(start.getDate(), end.getDate(), start.getKind(), text, end.getDate().isBefore(today), containsToday);
+        String text = schoolRange ? I18n.text("day.school") : start.getText();
+        return new CalendarEntryView(start.getDate(), end.getDate(), start.getKind(), text, schoolRange, end.getDate().isBefore(today), containsToday);
     }
 
     /**

@@ -6,9 +6,9 @@ import java.time.LocalDate;
 import java.util.regex.Pattern;
 
 /**
- * One line of the "Termine" page; consecutive days with the same holiday text are merged into a range.
+ * One line of the "Termine" page; consecutive school days (or days with the same holiday text) are merged into a range.
  */
-public record CalendarEntryView(LocalDate from, LocalDate to, DayKind kind, String text, boolean past, boolean today)
+public record CalendarEntryView(LocalDate from, LocalDate to, DayKind kind, String text, boolean schoolRange, boolean past, boolean today)
 {
     /**
      * "SchA ITP", "1.SA AEuP", "Ex D", "KA", "Prüfung", "Test" (abbreviations case-sensitive, so the weekday "Sa" never matches).
@@ -28,7 +28,7 @@ public record CalendarEntryView(LocalDate from, LocalDate to, DayKind kind, Stri
     {
         String base = switch (kind)
         {
-            case SCHOOL -> "entry entry--event";
+            case SCHOOL -> schoolRange ? "entry entry--school" : "entry entry--event";
             case HOLIDAY -> "entry entry--holiday";
             case NO_SCHOOL -> "entry entry--noschool";
         };
@@ -37,6 +37,6 @@ public record CalendarEntryView(LocalDate from, LocalDate to, DayKind kind, Stri
 
     public boolean exam()
     {
-        return kind == DayKind.SCHOOL && text != null && EXAM.matcher(text).find();
+        return kind == DayKind.SCHOOL && !schoolRange && text != null && EXAM.matcher(text).find();
     }
 }

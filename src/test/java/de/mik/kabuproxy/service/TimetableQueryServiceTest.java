@@ -24,6 +24,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
@@ -44,20 +45,22 @@ class TimetableQueryServiceTest
     }
 
     @Test
-    void mergesRangesAcrossWeekendsAndDropsPlainDays()
+    void mergesSchoolRangesAcrossWeekendsAndDropsPlainNoSchoolDays()
     {
         List<CalendarDayEntity> days = new ArrayList<>();
-        // Fri 09.10. no school, weekend, Mon 12.10.-Fri 16.10. no school -> one range
-        days.add(day(2026, 10, 9, DayKind.NO_SCHOOL, null));
+        // plain no-school days are left out
+        days.add(day(2026, 10, 1, DayKind.NO_SCHOOL, null));
+        days.add(day(2026, 10, 2, DayKind.NO_SCHOOL, null));
+        // Mon 05.10.-Fri 09.10., weekend, Mon 12.10.-Tue 13.10. school -> one range, exam day listed within it
+        for (int d = 5; d <= 9; d++)
+        {
+            days.add(day(2026, 10, d, DayKind.SCHOOL, d == 7 ? "SchA D" : null));
+        }
         days.add(day(2026, 10, 10, DayKind.HOLIDAY, null));
         days.add(day(2026, 10, 11, DayKind.HOLIDAY, null));
-        for (int d = 12; d <= 16; d++)
-        {
-            days.add(day(2026, 10, d, DayKind.NO_SCHOOL, null));
-        }
-        // plain school day without text is dropped, exam day kept
-        days.add(day(2026, 10, 19, DayKind.SCHOOL, null));
-        days.add(day(2026, 10, 20, DayKind.SCHOOL, "SchA D"));
+        days.add(day(2026, 10, 12, DayKind.SCHOOL, null));
+        days.add(day(2026, 10, 13, DayKind.SCHOOL, null));
+        days.add(day(2026, 10, 14, DayKind.NO_SCHOOL, null));
         // holidays with a name form their own range
         days.add(day(2026, 11, 2, DayKind.HOLIDAY, "Herbstferien"));
         days.add(day(2026, 11, 3, DayKind.HOLIDAY, "Herbstferien"));
@@ -68,10 +71,12 @@ class TimetableQueryServiceTest
         assertEquals(2, months.size());
         List<CalendarEntryView> october = months.getFirst().entries();
         assertEquals(2, october.size());
-        assertEquals(LocalDate.of(2026, 10, 9), october.get(0).from());
-        assertEquals(LocalDate.of(2026, 10, 16), october.get(0).to());
-        assertEquals("Kein Unterricht", october.get(0).text());
+        assertTrue(october.get(0).schoolRange());
+        assertEquals(LocalDate.of(2026, 10, 5), october.get(0).from());
+        assertEquals(LocalDate.of(2026, 10, 13), october.get(0).to());
+        assertEquals("Unterricht", october.get(0).text());
         assertEquals("SchA D", october.get(1).text());
+        assertTrue(october.get(1).exam());
 
         CalendarEntryView autumn = months.get(1).entries().getFirst();
         assertEquals("Herbstferien", autumn.text());

@@ -27,11 +27,11 @@ class CalendarEntryViewTest
         assertFalse(entry("Ordnungsdienst").exam());
         assertFalse(entry("Sa Wandertag").exam());
         assertFalse(entry("Exkursion").exam());
-        assertFalse(new CalendarEntryView(DAY, DAY, DayKind.HOLIDAY, "SchA", false, false).exam());
+        assertFalse(new CalendarEntryView(DAY, DAY, DayKind.HOLIDAY, "SchA", false, false, false).exam());
     }
 
     private static CalendarEntryView entry(String text)
     {
-        return new CalendarEntryView(DAY, DAY, DayKind.SCHOOL, text, false, false);
+        return new CalendarEntryView(DAY, DAY, DayKind.SCHOOL, text, false, false, false);
     }
 }

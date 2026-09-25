@@ -390,6 +390,8 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
 .entry--exam .entry__text { color: var(--cancel); }
 .entry--holiday { background: var(--holiday-soft); }
 .entry--holiday .entry__text { color: var(--holiday); font-weight: 600; }
+.entry--school { background: var(--accent-soft); }
+.entry--school .entry__text { color: var(--accent); font-weight: 600; }
 .entry--noschool .entry__text { color: var(--text-muted); font-style: italic; }
 .entry--past { opacity: .55; }
 .entry--today { --lesson-bar: var(--accent); }
