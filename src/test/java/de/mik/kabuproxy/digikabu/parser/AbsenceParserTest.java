@@ -26,6 +26,16 @@ class AbsenceParserTest
     }
 
     @Test
+    void recognisesCheckMarkAsExcused() throws Exception
+    {
+        ParsedAbsences absences = AbsenceParser.parse(Fixtures.load("absences_excused.html"));
+
+        assertEquals(1, absences.fullDays());
+        assertEquals(0, absences.fullDaysUnexcused());
+        assertEquals(ParsedAbsence.EXCUSED_MARK, absences.entries().getFirst().excused());
+    }
+
+    @Test
     void acceptsMissingDetailsWhenThereAreNoAbsences() throws Exception
     {
         ParsedAbsences absences = AbsenceParser.parse(Fixtures.load("absences_none.html"));

@@ -94,7 +94,7 @@ public final class AbsenceParser
                 blankToNull(cells.get(COL_TO).text()),
                 blankToNull(cells.get(COL_REMARK).text()),
                 blankToNull(cells.get(COL_KIND).text()),
-                blankToNull(cells.get(COL_EXCUSED).text())));
+                excused(cells.get(COL_EXCUSED))));
         }
         return new ParsedAbsences(fullDays[0], fullDays[1], hours[0], hours[1], entries);
     }
@@ -109,6 +109,19 @@ public final class AbsenceParser
         int total = Integer.parseInt(matcher.group(1));
         int unexcused = matcher.group(2) == null ? 0 : Integer.parseInt(matcher.group(2));
         return new int[] {total, unexcused};
+    }
+
+    /**
+     * The excused column holds either text or just a check-mark icon ({@code glyphicon-ok}) without any text.
+     */
+    private static String excused(Element cell)
+    {
+        String text = blankToNull(cell.text());
+        if (text == null && cell.selectFirst(".glyphicon-ok") != null)
+        {
+            return ParsedAbsence.EXCUSED_MARK;
+        }
+        return text;
     }
 
     private static String blankToNull(String value)

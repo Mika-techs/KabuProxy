@@ -32,7 +32,7 @@
                         <span class="absence__date">#{a.weekday} #{a.date}</span>
                         <span class="absence__span">#{a.from} – #{a.to} · #{a.kind}</span>
                         <span class="absence__remark">#{a.remark}</span>
-                        <span class="absence__state">#{a.excusedFlag ? a.excused : msg['absences.notExcused']}</span>
+                        <span class="absence__state">#{a.excusedMark ? msg['absences.excused'] : (a.excusedFlag ? a.excused : msg['absences.notExcused'])}</span>
                     </li>
                 </ui:repeat>
             </ul>
