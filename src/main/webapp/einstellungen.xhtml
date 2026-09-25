@@ -12,7 +12,9 @@
         <h1 class="toolbar__title">#{msg['settings.title']}</h1>
         <p class="muted">#{msg['settings.intro']}</p>
 
-        <h:form id="creds" styleClass="settings settings--first">
+        <!-- both forms are display: contents, their sections flow as one set of columns -->
+        <div class="settings-grid">
+        <h:form id="creds" styleClass="settings">
             <section class="settings__section">
                 <h2>#{msg['settings.credsHeading']}</h2>
                 <p class="muted small">#{msg['settings.credsText']}</p>
@@ -163,5 +165,6 @@
                 <h:commandButton value="#{msg['settings.reset']}" action="#{settingsController.reset}" styleClass="btn btn--ghost"/>
             </div>
         </h:form>
+        </div>
     </ui:define>
 </ui:composition>

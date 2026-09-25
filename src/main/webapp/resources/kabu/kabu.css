@@ -426,15 +426,18 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
 .dialog-actions { display: flex; justify-content: flex-end; }
 
 /* ---------- settings ---------- */
-.settings { display: flex; flex-direction: column; gap: 16px; max-width: 640px; }
+/* sections stack into as many ~26rem columns as fit; the save buttons span below all of them */
+.settings-grid { columns: 26rem; column-gap: 16px; }
+.settings { display: contents; }
 .settings__section {
+    break-inside: avoid; margin-bottom: 16px;
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
     box-shadow: var(--shadow); padding: 16px 18px;
 }
 .settings__section h2 { font-size: 1.05rem; margin-bottom: 2px; }
 .settings__section > p { margin: 0 0 12px; }
 .settings__actions { display: flex; gap: 8px; }
-.settings--first { margin-bottom: 16px; }
+.settings > .settings__actions { column-span: all; padding-top: 4px; }
 .creds__current { margin-bottom: 12px; }
 
 .segmented { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); }
