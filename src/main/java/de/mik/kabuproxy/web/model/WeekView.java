@@ -24,6 +24,11 @@ public record WeekView(LocalDate monday, List<PeriodView> periods, List<DayView>
         return rows.toString().trim();
     }
 
+    public List<PeriodView> breaks()
+    {
+        return periods.stream().filter(PeriodView::breakBefore).toList();
+    }
+
     public LocalDate previous()
     {
         return monday.minusWeeks(1);

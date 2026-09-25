@@ -23,7 +23,7 @@
     --shadow: 0 1px 2px rgba(20, 24, 40, .06), 0 2px 8px rgba(20, 24, 40, .05);
     --radius: 12px;
     --row-h: 64px;
-    --break-h: 10px;
+    --break-h: 20px;
     --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color-scheme: light;
 
@@ -282,6 +282,20 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
 .slot { display: flex; flex-direction: column; justify-content: center; align-items: flex-end; padding-right: 6px; border-right: 1px solid var(--border); }
 .slot__no { font-weight: 700; font-size: .95rem; }
 .slot__time { font-size: .72rem; color: var(--text-muted); text-align: right; line-height: 1.25; }
+/* breaks: own grid row, lessons running across one are split into a part before and after it */
+.slot--break {
+    font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--text-muted); line-height: 1;
+}
+.day__break {
+    position: relative; z-index: 1;
+    align-self: center; height: 8px;
+    /* reach into the 8px column gaps so the bars read as one line across the week; fixed = stripes line up too */
+    margin: 0 -4px;
+    background: repeating-linear-gradient(-45deg, var(--border), var(--border) 4px, transparent 4px, transparent 8px) fixed;
+}
+.timetable__times + .timetable__day .day__break { margin-left: -8px; }
+.timetable__day:last-child .day__break { margin-right: 0; border-radius: 0 999px 999px 0; }
 
 .day__free {
     display: grid; place-items: center; text-align: center;
@@ -348,6 +362,11 @@ code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
 .row__meta { grid-area: meta; color: var(--text-muted); font-size: .85rem; }
 .row__note { grid-area: note; color: var(--changed); font-size: .8rem; font-weight: 650; }
 .daycard__list .lesson.is-now::after { top: auto; bottom: 8px; }
+.daycard__break {
+    padding: 4px 16px; border-bottom: 1px solid var(--border);
+    background: repeating-linear-gradient(-45deg, var(--surface-2), var(--surface-2) 6px, transparent 6px, transparent 12px);
+    color: var(--text-muted); font-size: .75rem; font-weight: 650; text-transform: uppercase; letter-spacing: .05em;
+}
 
 /* ---------- calendar ---------- */
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 20px; }

@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -86,18 +87,18 @@ public class TimetableQueryService
             boolean breakBefore = slot != null && previous != null && slot.getStartTime().isAfter(previous.getEndTime());
             row += breakBefore ? 2 : 1;
             rowByPeriod.put(period, row);
-            periods.add(new PeriodView(period, row, breakBefore, slot == null ? "" : Formats.time(slot.getStartTime()),
-                slot == null ? "" : Formats.time(slot.getEndTime())));
+            periods.add(new PeriodView(period, row, breakBefore, breakBefore ? Formats.time(previous.getEndTime()) : "",
+                slot == null ? "" : Formats.time(slot.getStartTime()), slot == null ? "" : Formats.time(slot.getEndTime())));
         }
+        Map<Integer, PeriodView> breaks = periods.stream().filter(PeriodView::breakBefore)
+            .collect(Collectors.toMap(PeriodView::period, p -> p));
 
         List<DayView> days = new ArrayList<>();
         boolean hasLessons = false;
         for (int i = 0; i < SCHOOL_DAYS; i++)
         {
             LocalDate date = monday.plusDays(i);
-            List<LessonView> lessons = lessonsByDay.getOrDefault(date, List.of()).stream()
-                .map(l -> toView(l, slotByPeriod, rowByPeriod))
-                .toList();
+            List<LessonView> lessons = dayViews(lessonsByDay.getOrDefault(date, List.of()), slotByPeriod, rowByPeriod, breaks);
             hasLessons |= !lessons.isEmpty();
             CalendarDayEntity calendarDay = calendar.get(date);
             days.add(new DayView(date, date.equals(today), lessons,
@@ -242,13 +243,63 @@ public class TimetableQueryService
         return new CalendarEntryView(start.getDate(), end.getDate(), start.getKind(), text, end.getDate().isBefore(today), containsToday);
     }
 
-    private static LessonView toView(LessonEntity lesson, Map<Integer, PeriodSlotEntity> slots, Map<Integer, Integer> rowByPeriod)
+    /**
+     * The day's lessons, split at breaks so every part gets its own box, time and countdown; ordered by period again.
+     */
+    static List<LessonView> dayViews(List<LessonEntity> lessons, Map<Integer, PeriodSlotEntity> slots, Map<Integer, Integer> rowByPeriod,
+        Map<Integer, PeriodView> breaks)
     {
-        PeriodSlotEntity first = slots.get(lesson.getPeriodFrom());
-        PeriodSlotEntity last = slots.get(lesson.getPeriodTo());
+        List<Part> parts = new ArrayList<>();
+        for (LessonEntity lesson : lessons)
+        {
+            int from = lesson.getPeriodFrom();
+            for (int period = from + 1; period <= lesson.getPeriodTo(); period++)
+            {
+                if (breaks.containsKey(period))
+                {
+                    parts.add(new Part(lesson, from, period - 1));
+                    from = period;
+                }
+            }
+            parts.add(new Part(lesson, from, lesson.getPeriodTo()));
+        }
+        // stable: parallel lessons keep their lane order
+        parts.sort(Comparator.comparingInt(Part::from));
+
+        List<LessonView> views = new ArrayList<>();
+        int lastPeriod = 0;
+        for (Part part : parts)
+        {
+            // the mobile list shows a break between the last lesson before it and the first one after it
+            String breakBefore = null;
+            for (int period = lastPeriod + 1; lastPeriod > 0 && period <= part.from(); period++)
+            {
+                if (breaks.containsKey(period))
+                {
+                    breakBefore = breaks.get(period).breakLabel();
+                }
+            }
+            lastPeriod = Math.max(lastPeriod, part.to());
+            views.add(toView(part, slots, rowByPeriod, breakBefore));
+        }
+        return views;
+    }
+
+    private static LessonView toView(Part part, Map<Integer, PeriodSlotEntity> slots, Map<Integer, Integer> rowByPeriod, String breakBefore)
+    {
+        LessonEntity lesson = part.lesson();
+        PeriodSlotEntity first = slots.get(part.from());
+        PeriodSlotEntity last = slots.get(part.to());
         String time = first == null || last == null ? "" : Formats.time(first.getStartTime()) + "–" + Formats.time(last.getEndTime());
-        return new LessonView(lesson.getPeriodFrom(), lesson.getPeriodTo(), rowByPeriod.getOrDefault(lesson.getPeriodFrom(), lesson.getPeriodFrom()),
-            rowByPeriod.getOrDefault(lesson.getPeriodTo(), lesson.getPeriodTo()), lesson.getLane(), lesson.getLaneCount(), lesson.getSubject(),
-            lesson.getTeacher(), lesson.getRoom(), lesson.getStatus(), lesson.getHint(), lesson.getNote(), time);
+        return new LessonView(part.from(), part.to(), rowByPeriod.getOrDefault(part.from(), part.from()),
+            rowByPeriod.getOrDefault(part.to(), part.to()), lesson.getLane(), lesson.getLaneCount(), lesson.getSubject(), lesson.getTeacher(),
+            lesson.getRoom(), lesson.getStatus(), lesson.getHint(), lesson.getNote(), time, breakBefore);
+    }
+
+    /**
+     * The periods {@code from}..{@code to} of a lesson, between two breaks.
+     */
+    private record Part(LessonEntity lesson, int from, int to)
+    {
     }
 }

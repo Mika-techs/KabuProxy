@@ -4,7 +4,9 @@ import de.mik.kabuproxy.persistence.entities.LessonStatus;
 
 /**
  * A lesson as rendered. The desktop grid uses 6 sub-columns per day so halves and thirds both fit; {@code rowFrom}/{@code rowTo}
- * are the grid rows of the first/last period (see {@link PeriodView#row()}).
+ * are the grid rows of the first/last period (see {@link PeriodView#row()}). Lessons running across a break are split
+ * into one view per part; {@code breakBefore} is the break (e.g. "10:00–10:15") the mobile list shows above this lesson,
+ * or null.
  */
 public record LessonView(
     int periodFrom,
@@ -19,7 +21,8 @@ public record LessonView(
     LessonStatus status,
     String hint,
     String note,
-    String timeLabel)
+    String timeLabel,
+    String breakBefore)
 {
     private static final int SUB_COLUMNS = 6;
 

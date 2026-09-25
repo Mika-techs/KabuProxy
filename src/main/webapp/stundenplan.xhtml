@@ -85,6 +85,9 @@
 
                 <div class="timetable__times" style="#{timetableController.week.gridRows}">
                     <ui:repeat value="#{timetableController.week.periods}" var="p">
+                        <ui:fragment rendered="#{p.breakBefore}">
+                            <div class="slot slot--break" style="#{p.breakStyle}" title="#{p.breakLabel}">#{msg['timetable.break']}</div>
+                        </ui:fragment>
                         <div class="slot" style="#{p.gridStyle}">
                             <span class="slot__no">#{p.period}</span>
                             <span class="slot__time">#{p.start}<br/>#{p.end}</span>
@@ -97,6 +100,9 @@
                         <ui:fragment rendered="#{d.free}">
                             <div class="day__free" style="grid-row:1 / -1;grid-column:1 / -1">#{d.freeLabel}</div>
                         </ui:fragment>
+                        <ui:repeat value="#{timetableController.week.breaks}" var="b">
+                            <div class="day__break" style="#{b.breakStyle}" title="#{msg['timetable.break']} #{b.breakLabel}"></div>
+                        </ui:repeat>
                         <ui:repeat value="#{d.lessons}" var="l">
                             <article class="#{l.cssClass} #{l.singlePeriod ? 'lesson--short' : ''}" style="#{l.gridStyle};#{theme.settings.lessonStyle(l.subject, l.teacher)}" data-time="#{l.timeLabel}">
                                 <div class="lesson__subject" title="#{l.subject}">#{theme.settings.lessonName(l.subject, l.teacher)}</div>
@@ -127,6 +133,9 @@
                         </ui:fragment>
                         <ul class="daycard__list">
                             <ui:repeat value="#{d.lessons}" var="l">
+                                <ui:fragment rendered="#{not empty l.breakBefore}">
+                                    <li class="daycard__break">#{msg['timetable.break']} · #{l.breakBefore}</li>
+                                </ui:fragment>
                                 <li class="#{l.cssClass}" style="#{theme.settings.lessonStyle(l.subject, l.teacher)}" data-time="#{l.timeLabel}">
                                     <span class="row__period">#{l.periodLabel}</span>
                                     <span class="row__time">#{l.timeLabel}</span>

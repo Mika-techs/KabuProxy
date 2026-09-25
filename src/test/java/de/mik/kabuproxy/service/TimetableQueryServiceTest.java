@@ -2,9 +2,14 @@ package de.mik.kabuproxy.service;
 
 import de.mik.kabuproxy.persistence.entities.CalendarDayEntity;
 import de.mik.kabuproxy.persistence.entities.DayKind;
+import de.mik.kabuproxy.persistence.entities.LessonEntity;
+import de.mik.kabuproxy.persistence.entities.LessonStatus;
+import de.mik.kabuproxy.persistence.entities.PeriodSlotEntity;
 import de.mik.kabuproxy.persistence.repository.CalendarRepository;
 import de.mik.kabuproxy.web.model.CalendarEntryView;
+import de.mik.kabuproxy.web.model.LessonView;
 import de.mik.kabuproxy.web.model.MonthView;
+import de.mik.kabuproxy.web.model.PeriodView;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,10 +17,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
@@ -68,6 +76,61 @@ class TimetableQueryServiceTest
         CalendarEntryView autumn = months.get(1).entries().getFirst();
         assertEquals("Herbstferien", autumn.text());
         assertEquals(LocalDate.of(2026, 11, 3), autumn.to());
+    }
+
+    @Test
+    void splitsLessonsAtBreaks()
+    {
+        // periods 1-4 of 45 minutes from 8:30, break 10:00-10:15 before period 3 (grid row 4)
+        Map<Integer, PeriodSlotEntity> slots = Map.of(1, slot(1, 8, 30), 2, slot(2, 9, 15), 3, slot(3, 10, 15), 4, slot(4, 11, 0));
+        Map<Integer, Integer> rows = Map.of(1, 1, 2, 2, 3, 4, 4, 5);
+        Map<Integer, PeriodView> breaks = Map.of(3, new PeriodView(3, 4, true, "10:00", "10:15", "11:00"));
+        List<LessonEntity> lessons = List.of(lesson(1, 1, "D"), lesson(2, 3, "M"), lesson(4, 4, "E"));
+
+        List<LessonView> views = TimetableQueryService.dayViews(lessons, slots, rows, breaks);
+
+        assertEquals(List.of("D", "M", "M", "E"), views.stream().map(LessonView::subject).toList());
+        LessonView beforeBreak = views.get(1);
+        assertEquals("9:15–10:00", beforeBreak.timeLabel());
+        assertEquals(2, beforeBreak.rowTo());
+        assertNull(beforeBreak.breakBefore());
+        LessonView afterBreak = views.get(2);
+        assertEquals(3, afterBreak.periodFrom());
+        assertEquals(4, afterBreak.rowFrom());
+        assertEquals("10:00–10:15", afterBreak.breakBefore());
+        assertNull(views.get(3).breakBefore());
+    }
+
+    @Test
+    void noBreakMarkerBeforeTheFirstLesson()
+    {
+        Map<Integer, PeriodSlotEntity> slots = Map.of(3, slot(3, 10, 15));
+        Map<Integer, PeriodView> breaks = Map.of(3, new PeriodView(3, 4, true, "10:00", "10:15", "11:00"));
+
+        List<LessonView> views = TimetableQueryService.dayViews(List.of(lesson(3, 3, "M")), slots, Map.of(3, 4), breaks);
+
+        assertEquals(1, views.size());
+        assertNull(views.getFirst().breakBefore());
+    }
+
+    private static PeriodSlotEntity slot(int period, int hour, int minute)
+    {
+        PeriodSlotEntity slot = new PeriodSlotEntity();
+        slot.setPeriod(period);
+        slot.setStartTime(LocalTime.of(hour, minute));
+        slot.setEndTime(LocalTime.of(hour, minute).plusMinutes(45));
+        return slot;
+    }
+
+    private static LessonEntity lesson(int from, int to, String subject)
+    {
+        LessonEntity lesson = new LessonEntity();
+        lesson.setPeriodFrom(from);
+        lesson.setPeriodTo(to);
+        lesson.setLaneCount(1);
+        lesson.setSubject(subject);
+        lesson.setStatus(LessonStatus.REGULAR);
+        return lesson;
     }
 
     private static CalendarDayEntity day(int year, int month, int dayOfMonth, DayKind kind, String text)
